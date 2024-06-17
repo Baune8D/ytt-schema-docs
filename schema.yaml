@@ -1,0 +1,38 @@
+#@data/values-schema
+---
+#@schema/title "Username"
+#@schema/desc "Required string value."
+#@schema/validation min_len=1
+username: ""
+#@schema/title "Replicas"
+#@schema/desc "Required integer value."
+#@schema/validation min=1
+replicas: 0
+#@schema/title "Response Types"
+#@schema/desc "Required string array."
+#@schema/validation min_len=1
+responseTypes:
+  - ""
+#@schema/title "Credentials"
+#@schema/desc "Required map.<br/><strong><em>Click link to see map definition.</em></strong>"
+#@schema/nullable
+#@schema/validation not_null=True
+credential:
+  #@schema/desc "Some name input field."
+  #@schema/validation min_len=1
+  name: ""
+  #@schema/desc "Some cloud input field."
+  #@schema/validation min_len=1
+  cloud: ""
+#@schema/title "Password"
+#@schema/desc "Ensure exact string length."
+#@schema/validation min_len=8, max_len=8
+password: ""
+#@schema/title "Port Number"
+#@schema/desc "Ensure a value between min and max."
+#@schema/validation min=1, max=65535
+port: 1024
+#@schema/title "Cloud Provider"
+#@schema/desc "Enumeration of string values."
+#@schema/validation one_of=["aws", "azure", "vsphere"]
+provider: ""

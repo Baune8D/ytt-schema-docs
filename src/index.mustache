@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>{{{appName}}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8" />
+    <link href="main.css" rel="stylesheet" />
+</head>
+<body class="container mx-auto mt-8 antialiased text-slate-400 bg-slate-900">
+    <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl lg:text-6xl text-white text-center lg:text-left">{{{appName}}}</h1>
+    <div class="flex-none lg:flex flex-wrap lg:flex-nowrap">
+        <p class="mb-2 lg:mb-6 text-lg font-normal lg:text-xl text-gray-400 text-center lg:text-left">{{{appDescription}}}</p>
+        <p class="grow"></p>
+        <p class="mb-6 text-lg font-normal lg:text-xl text-gray-400 text-center lg:text-left">Version: <span class="font-bold">{{{version}}}</span></p>
+    </div>
+    <div id="content"></div>
+    <script>
+        window.defs = {}
+        {{#models}}
+            {{#model}}
+                window.defs["{{name}}"] = {{{modelJson}}};
+            {{/model}}
+        {{/models}}
+    </script>
+    <script src="bundle.js"></script>
+</body>
+</html>

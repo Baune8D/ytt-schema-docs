@@ -1,0 +1,9 @@
+#@ load("@ytt:overlay", "overlay")
+
+#@overlay/match by=overlay.all
+---
+info:
+  version: 0.1.0
+  title: ytt schema documentation
+  #@overlay/match missing_ok=True
+  description: Just a schema documentation example
