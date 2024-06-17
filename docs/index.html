@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>ytt schema documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8" />
+    <link href="main.css" rel="stylesheet" />
+</head>
+<body class="container mx-auto mt-8 antialiased text-slate-400 bg-slate-900">
+    <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl lg:text-6xl text-white text-center lg:text-left">ytt schema documentation</h1>
+    <div class="flex-none lg:flex flex-wrap lg:flex-nowrap">
+        <p class="mb-2 lg:mb-6 text-lg font-normal lg:text-xl text-gray-400 text-center lg:text-left">Just a schema documentation example</p>
+        <p class="grow"></p>
+        <p class="mb-6 text-lg font-normal lg:text-xl text-gray-400 text-center lg:text-left">Version: <span class="font-bold">0.1.0</span></p>
+    </div>
+    <div id="content"></div>
+    <script>
+        window.defs = {}
+                window.defs["Credentials"] = {
+  "title" : "Credentials",
+  "type" : "object",
+  "properties" : {
+    "name" : {
+      "minLength" : 1,
+      "type" : "string",
+      "description" : "Some name input field.",
+      "default" : ""
+    },
+    "cloud" : {
+      "minLength" : 1,
+      "type" : "string",
+      "description" : "Some cloud input field.",
+      "default" : ""
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Required map.<br/><strong><em>Click link to see map definition.</em></strong>",
+  "nullable" : true
+};
+                window.defs["dataValues"] = {
+  "type" : "object",
+  "properties" : {
+    "username" : {
+      "title" : "Username",
+      "minLength" : 1,
+      "type" : "string",
+      "description" : "Required string value.",
+      "default" : ""
+    },
+    "replicas" : {
+      "title" : "Replicas",
+      "minimum" : 1,
+      "type" : "integer",
+      "description" : "Required integer value.",
+      "default" : 0
+    },
+    "responseTypes" : {
+      "title" : "Response Types",
+      "minItems" : 1,
+      "type" : "array",
+      "description" : "Required string array.",
+      "items" : {
+        "type" : "string",
+        "default" : ""
+      },
+      "default" : [ ]
+    },
+    "credential" : {
+      "$ref" : "#/components/schemas/Credentials"
+    },
+    "password" : {
+      "title" : "Password",
+      "maxLength" : 8,
+      "minLength" : 8,
+      "type" : "string",
+      "description" : "Ensure exact string length.",
+      "default" : ""
+    },
+    "port" : {
+      "title" : "Port Number",
+      "maximum" : 65535,
+      "minimum" : 1,
+      "type" : "integer",
+      "description" : "Ensure a value between min and max.",
+      "default" : 1024
+    },
+    "provider" : {
+      "title" : "Cloud Provider",
+      "type" : "string",
+      "description" : "Enumeration of string values.",
+      "enum" : [ "aws", "azure", "vsphere" ],
+      "default" : ""
+    }
+  },
+  "additionalProperties" : false
+};
+    </script>
+    <script src="bundle.js"></script>
+</body>
+</html>
