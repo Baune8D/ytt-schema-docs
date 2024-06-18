@@ -11,8 +11,11 @@ try {
     {
       dereference: {
         onDereference: (path, value, parent, prop) => {
+          // Add extra properties to each value.
           value.ref = path.replace('#/components/schemas/', '');
           value.name = prop;
+
+          // Add a parent reference value to all sub properties.
           Object.keys(value.properties).forEach((key) => {
             const entry = value.properties[key];
             if (entry.type === 'array') {
@@ -116,6 +119,8 @@ function hasDefault(value) {
 
 function appendRow(key, data, table) {
   const value = data[key];
+
+  // When type is array we need to fix some properties that was not possible on dereference.
   if (value.type === 'array') {
     value.items.name = key;
     value.items.isArray = true;
@@ -208,6 +213,7 @@ function generateBreadCrumbs(key, index, data) {
 }
 
 function createTable(key, index) {
+  // Skip rendering table if title begins with __REMOVE_ME__
   if (key.startsWith(removeMe)) {
     return;
   }
@@ -244,9 +250,14 @@ function createTable(key, index) {
 
   const properties = data.properties;
   const table = document.getElementById(key);
+
+  // Append properties to table html.
   Object.keys(properties).forEach((prop) => appendRow(prop, properties, table));
 }
 
+// Make sure root data values is rendered first.
 const keys = Object.keys(defs).filter((key) => key !== 'dataValues');
 keys.unshift('dataValues');
+
+// Render all properties to tables.
 keys.forEach((key, index) => createTable(key, index));
