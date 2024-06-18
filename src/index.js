@@ -180,12 +180,7 @@ function appendRow(key, data, table) {
   table.appendChild(tr);
 }
 
-function createTable(key, index) {
-  if (key.startsWith(removeMe)) {
-    return;
-  }
-
-  const data = defs[key];
+function generateBreadCrumbs(key, index, data) {
   const currName = data.isArray ? `${data.name}[]` : data.name ?? 'root';
   const links = [
     `<span class="underline"><a id="${key}_anchor">${currName}</a></span>`,
@@ -207,6 +202,19 @@ function createTable(key, index) {
 
   links.reverse();
 
+  return links.length > 1
+    ? links.join('<span class="text-sm mx-2 pt-1">&gt;</span>')
+    : links[0];
+}
+
+function createTable(key, index) {
+  if (key.startsWith(removeMe)) {
+    return;
+  }
+
+  const data = defs[key];
+  const breadCrumbs = generateBreadCrumbs(key, index, data);
+
   content.innerHTML += `
         <div class="not-prose relative rounded-xl overflow-hidden bg-slate-800/25 ${index !== 0 ? 'mt-8' : ''}">
             <div class="inset-0 bg-grid-slate-700/25">
@@ -217,7 +225,7 @@ function createTable(key, index) {
                                 <tr>
                                     <th class="border-slate-600 font-medium p-4 pl-8 pt-0 pb-8 text-slate-200 text-left text-2xl" colspan="3">
                                         <div class="flex items-center flex-wrap">
-                                            <span class="mr-2 font-bold">Map:</span>${links.length > 1 ? links.join('<span class="text-sm mx-2 pt-1">&gt;</span>') : links[0]}
+                                            <span class="mr-2 font-bold">Map:</span>${breadCrumbs}
                                         </div>
                                     </th>
                                 </tr>
