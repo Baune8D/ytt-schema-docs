@@ -10,6 +10,7 @@ username: ""
 replicas: 0
 #@schema/title "Response Types"
 #@schema/desc "Required string array."
+#@schema/examples ("Example", ["<strong>Content-Length</strong>"])
 #@schema/validation min_len=1
 responseTypes:
   - ""
@@ -60,3 +61,9 @@ config:
 #@schema/desc "Conditional validations can be described manually.<br/><strong><span class=\"text-red-600\">Required:</span> when \"type\" equals \"LoadBalancer\"</strong>"
 #@schema/validation min_len=1, when=lambda _, ctx: ctx.parent["type"] == "LoadBalancer"
 selector: ""
+#@schema/title "Environment Value"
+#@schema/desc "Type is <strong>any</strong>, but we can use \"#@schema/examples\" to manually define values."
+#@schema/examples ("Type", "[\"<strong>string</strong>\", \"<strong>integer</strong>\", \"<strong>boolean</strong>\"]")
+#@schema/nullable
+#@schema/type any=True
+environment: ""

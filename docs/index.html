@@ -77,11 +77,13 @@
       "minItems" : 1,
       "type" : "array",
       "description" : "Required string array.",
+      "example" : [ "<strong>Content-Length</strong>" ],
       "items" : {
         "type" : "string",
         "default" : ""
       },
-      "default" : [ ]
+      "default" : [ ],
+      "x-example-description" : "Example"
     },
     "credential" : {
       "$ref" : "#/components/schemas/Credentials"
@@ -117,6 +119,14 @@
       "type" : "string",
       "description" : "Conditional validations can be described manually.<br/><strong><span class=\"text-red-600\">Required:</span> when \"type\" equals \"LoadBalancer\"</strong>",
       "default" : ""
+    },
+    "environment" : {
+      "title" : "Environment Value",
+      "description" : "Type is <strong>any</strong>, but we can use \"#@schema/examples\" to manually define values.",
+      "nullable" : true,
+      "example" : "[\"<strong>string</strong>\", \"<strong>integer</strong>\", \"<strong>boolean</strong>\"]",
+      "default" : null,
+      "x-example-description" : "Type"
     }
   },
   "additionalProperties" : false
