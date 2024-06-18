@@ -34,22 +34,31 @@ const removeMe = '__REMOVE_ME__';
 const content = document.getElementById('content');
 
 const subText = (text) => `<div class="text-xs mt-1">${text}</div>`;
+
 const enumText = (value) =>
   subText(
     `Enum: ["<strong>${value.enum.join('</strong>", "<strong>')}</strong>"]`,
   );
+
 const defaultText = (value) =>
   subText(`Default: <strong>${value.default}</strong>`);
+
 const minLengthText = (length) =>
   subText(`Minimum length: <strong>${length}</strong>`);
+
 const minimumText = (length) => subText(`Minimum: <strong>${length}</strong>`);
+
 const maxLengthText = (length) =>
   subText(`Maximum length: <strong>${length}</strong>`);
+
 const maximumText = (length) => subText(`Maximum: <strong>${length}</strong>`);
+
 const exampleText = (value) =>
   subText(`${value['x-example-description']}: ${value.example}`);
+
 const requiredText = () =>
   '<span class="font-bold italic text-red-600 text-xs ml-2">Required</span>';
+
 const anchorLink = (ref, text) =>
   `<a href="#${ref}_anchor" class="text-blue-600 hover:underline">${text}</a>`;
 
@@ -125,33 +134,43 @@ function appendRow(key, data, table) {
   tr.appendChild(tdName);
 
   const tdType = createTd(2);
+
   tdType.innerHTML += getType(value);
+
   if (isRequired(value)) {
     tdType.innerHTML += requiredText(value);
   }
+
   const minLength = value.minLength || value.minItems;
   if (minLength) {
     tdType.innerHTML += minLengthText(minLength);
   }
+
   if (value.minimum) {
     tdType.innerHTML += minimumText(value.minimum);
   }
+
   const maxLength = value.maxLength || value.maxItems;
   if (maxLength) {
     tdType.innerHTML += maxLengthText(maxLength);
   }
+
   if (value.maximum) {
     tdType.innerHTML += maximumText(value.maximum);
   }
+
   if ('enum' in value) {
     tdType.innerHTML += enumText(value);
   }
+
   if (hasDefault(value)) {
     tdType.innerHTML += defaultText(value);
   }
+
   if ('example' in value) {
     tdType.innerHTML += exampleText(value);
   }
+
   tr.appendChild(tdType);
 
   const tdDesc = createTd(3);
