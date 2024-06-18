@@ -18,20 +18,36 @@
     <div id="content"></div>
     <script>
         window.defs = {}
+                window.defs["Auth_Configuration"] = {
+  "title" : "Auth Configuration",
+  "type" : "object",
+  "properties" : {
+    "oidc" : {
+      "$ref" : "#/components/schemas/OpenID_Connect_Protocol"
+    },
+    "ldap" : {
+      "$ref" : "#/components/schemas/Lightweight_Directory_Access_Protocol"
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Exactly one sub property is specified."
+};
                 window.defs["Credentials"] = {
   "title" : "Credentials",
   "type" : "object",
   "properties" : {
     "name" : {
+      "title" : "Credential Name",
       "minLength" : 1,
       "type" : "string",
-      "description" : "Some name input field.",
+      "description" : "Credential name value.",
       "default" : ""
     },
     "cloud" : {
+      "title" : "Cloud Credential",
       "minLength" : 1,
       "type" : "string",
-      "description" : "Some cloud input field.",
+      "description" : "Credential key value.",
       "default" : ""
     }
   },
@@ -50,7 +66,7 @@
       "default" : ""
     },
     "replicas" : {
-      "title" : "Replicas",
+      "title" : "Replica amount",
       "minimum" : 1,
       "type" : "integer",
       "description" : "Required integer value.",
@@ -90,11 +106,50 @@
       "title" : "Cloud Provider",
       "type" : "string",
       "description" : "Enumeration of string values.",
-      "enum" : [ "aws", "azure", "vsphere" ],
+      "default" : "",
+      "enum" : [ "aws", "azure", "vsphere" ]
+    },
+    "config" : {
+      "$ref" : "#/components/schemas/Auth_Configuration"
+    },
+    "selector" : {
+      "title" : "LoadBalancer Selector",
+      "type" : "string",
+      "description" : "Conditional validations can be described manually.<br/><strong><span class=\"text-red-600\">Required:</span> when \"type\" equals \"LoadBalancer\"</strong>",
       "default" : ""
     }
   },
   "additionalProperties" : false
+};
+                window.defs["Lightweight_Directory_Access_Protocol"] = {
+  "title" : "Lightweight Directory Access Protocol",
+  "type" : "object",
+  "properties" : {
+    "host" : {
+      "title" : "Hostname",
+      "type" : "string",
+      "description" : "LDAP hostname.",
+      "default" : ""
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Only <strong>\"oidc\"</strong> or <strong>\"ldap\"</strong> can be specified!",
+  "nullable" : true
+};
+                window.defs["OpenID_Connect_Protocol"] = {
+  "title" : "OpenID Connect Protocol",
+  "type" : "object",
+  "properties" : {
+    "client_id" : {
+      "title" : "Client ID",
+      "type" : "string",
+      "description" : "OIDC Client ID.",
+      "default" : ""
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Only <strong>\"oidc\"</strong> or <strong>\"ldap\"</strong> can be specified!",
+  "nullable" : true
 };
     </script>
     <script src="bundle.js"></script>

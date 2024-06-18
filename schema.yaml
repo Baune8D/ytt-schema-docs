@@ -4,7 +4,7 @@
 #@schema/desc "Required string value."
 #@schema/validation min_len=1
 username: ""
-#@schema/title "Replicas"
+#@schema/title "Replica amount"
 #@schema/desc "Required integer value."
 #@schema/validation min=1
 replicas: 0
@@ -18,10 +18,12 @@ responseTypes:
 #@schema/nullable
 #@schema/validation not_null=True
 credential:
-  #@schema/desc "Some name input field."
+  #@schema/title "Credential Name"
+  #@schema/desc "Credential name value."
   #@schema/validation min_len=1
   name: ""
-  #@schema/desc "Some cloud input field."
+  #@schema/title "Cloud Credential"
+  #@schema/desc "Credential key value."
   #@schema/validation min_len=1
   cloud: ""
 #@schema/title "Password"
@@ -36,3 +38,25 @@ port: 1024
 #@schema/desc "Enumeration of string values."
 #@schema/validation one_of=["aws", "azure", "vsphere"]
 provider: ""
+#@schema/title "Auth Configuration"
+#@schema/desc "Exactly one sub property is specified."
+#@schema/validation one_not_null=["oidc", "ldap"]
+config:
+  #@schema/title "OpenID Connect Protocol"
+  #@schema/desc "Only <strong>\"oidc\"</strong> or <strong>\"ldap\"</strong> can be specified!"
+  #@schema/nullable
+  oidc:
+    #@schema/title "Client ID"
+    #@schema/desc "OIDC Client ID."
+    client_id: ""
+  #@schema/title "Lightweight Directory Access Protocol"
+  #@schema/desc "Only <strong>\"oidc\"</strong> or <strong>\"ldap\"</strong> can be specified!"
+  #@schema/nullable
+  ldap:
+    #@schema/title "Hostname"
+    #@schema/desc "LDAP hostname."
+    host: ""
+#@schema/title "LoadBalancer Selector"
+#@schema/desc "Conditional validations can be described manually.<br/><strong><span class=\"text-red-600\">Required:</span> when \"type\" equals \"LoadBalancer\"</strong>"
+#@schema/validation min_len=1, when=lambda _, ctx: ctx.parent["type"] == "LoadBalancer"
+selector: ""
