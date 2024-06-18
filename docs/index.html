@@ -52,7 +52,7 @@
     }
   },
   "additionalProperties" : false,
-  "description" : "Required map.<br/><strong><em>Click link to see map definition.</em></strong>",
+  "description" : "Required map.<br/><strong><em>Click on property to go to map definition.</em></strong>",
   "nullable" : true
 };
                 window.defs["dataValues"] = {
@@ -108,8 +108,8 @@
       "title" : "Cloud Provider",
       "type" : "string",
       "description" : "Enumeration of string values.",
-      "default" : "",
-      "enum" : [ "aws", "azure", "vsphere" ]
+      "enum" : [ "aws", "azure", "vsphere" ],
+      "default" : ""
     },
     "config" : {
       "$ref" : "#/components/schemas/Auth_Configuration"
@@ -117,12 +117,12 @@
     "selector" : {
       "title" : "LoadBalancer Selector",
       "type" : "string",
-      "description" : "Conditional validations can be described manually.<br/><strong><span class=\"text-red-600\">Required:</span> when \"type\" equals \"LoadBalancer\"</strong>",
+      "description" : "Conditional validations can be described manually.<br/><strong><span class=\"text-red-600\">Required:</span></strong> when <strong>type</strong> equals <strong>LoadBalancer</strong>.",
       "default" : ""
     },
     "environment" : {
       "title" : "Environment Value",
-      "description" : "Type is <strong>any</strong>, but we can use \"#@schema/examples\" to manually define values.",
+      "description" : "Type is <strong>any</strong>, but we can use <strong>#@schema/examples</strong> to manually define values.",
       "nullable" : true,
       "example" : "[\"<strong>string</strong>\", \"<strong>integer</strong>\", \"<strong>boolean</strong>\"]",
       "default" : null,
@@ -143,7 +143,7 @@
     }
   },
   "additionalProperties" : false,
-  "description" : "Only <strong>\"oidc\"</strong> or <strong>\"ldap\"</strong> can be specified!",
+  "description" : "<strong>NOTE:</strong> Only one of <strong>oidc</strong> or <strong>ldap</strong> can be specified at a time!",
   "nullable" : true
 };
                 window.defs["OpenID_Connect_Protocol"] = {
@@ -158,7 +158,7 @@
     }
   },
   "additionalProperties" : false,
-  "description" : "Only <strong>\"oidc\"</strong> or <strong>\"ldap\"</strong> can be specified!",
+  "description" : "<strong>NOTE:</strong> Only one of <strong>oidc</strong> or <strong>ldap</strong> can be specified at a time!",
   "nullable" : true
 };
     </script>

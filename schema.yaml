@@ -15,7 +15,7 @@ replicas: 0
 responseTypes:
   - ""
 #@schema/title "Credentials"
-#@schema/desc "Required map.<br/><strong><em>Click link to see map definition.</em></strong>"
+#@schema/desc "Required map.<br/><strong><em>Click on property to go to map definition.</em></strong>"
 #@schema/nullable
 #@schema/validation not_null=True
 credential:
@@ -44,25 +44,25 @@ provider: ""
 #@schema/validation one_not_null=["oidc", "ldap"]
 config:
   #@schema/title "OpenID Connect Protocol"
-  #@schema/desc "Only <strong>\"oidc\"</strong> or <strong>\"ldap\"</strong> can be specified!"
+  #@schema/desc "<strong>NOTE:</strong> Only one of <strong>oidc</strong> or <strong>ldap</strong> can be specified at a time!"
   #@schema/nullable
   oidc:
     #@schema/title "Client ID"
     #@schema/desc "OIDC Client ID."
     client_id: ""
   #@schema/title "Lightweight Directory Access Protocol"
-  #@schema/desc "Only <strong>\"oidc\"</strong> or <strong>\"ldap\"</strong> can be specified!"
+  #@schema/desc "<strong>NOTE:</strong> Only one of <strong>oidc</strong> or <strong>ldap</strong> can be specified at a time!"
   #@schema/nullable
   ldap:
     #@schema/title "Hostname"
     #@schema/desc "LDAP hostname."
     host: ""
 #@schema/title "LoadBalancer Selector"
-#@schema/desc "Conditional validations can be described manually.<br/><strong><span class=\"text-red-600\">Required:</span> when \"type\" equals \"LoadBalancer\"</strong>"
+#@schema/desc "Conditional validations can be described manually.<br/><strong><span class=\"text-red-600\">Required:</span></strong> when <strong>type</strong> equals <strong>LoadBalancer</strong>."
 #@schema/validation min_len=1, when=lambda _, ctx: ctx.parent["type"] == "LoadBalancer"
 selector: ""
 #@schema/title "Environment Value"
-#@schema/desc "Type is <strong>any</strong>, but we can use \"#@schema/examples\" to manually define values."
+#@schema/desc "Type is <strong>any</strong>, but we can use <strong>#@schema/examples</strong> to manually define values."
 #@schema/examples ("Type", "[\"<strong>string</strong>\", \"<strong>integer</strong>\", \"<strong>boolean</strong>\"]")
 #@schema/nullable
 #@schema/type any=True
