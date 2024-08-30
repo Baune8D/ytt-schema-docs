@@ -1,5 +1,7 @@
 # ytt schema documentation
 
+Generate HTML documentation for any [ytt](https://carvel.dev/ytt/) schema.
+
 **Example site here:** https://baunegaard.net/ytt-schema-docs/
 
 Styling done using [tailwindcss](https://tailwindcss.com/) since i hate writing CSS.
