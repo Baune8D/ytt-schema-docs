@@ -186,7 +186,7 @@ function appendRow(key, data, table) {
 }
 
 function generateBreadCrumbs(key, index, data) {
-  const currName = data.isArray ? `${data.name}[]` : data.name ?? 'root';
+  const currName = data.isArray ? `${data.name}[]` : (data.name ?? 'root');
   const links = [
     `<span class="underline"><a id="${key}_anchor">${currName}</a></span>`,
   ];
