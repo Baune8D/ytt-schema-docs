@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
-    "@openapitools/openapi-generator-cli": "^2.13.5",
+    "@openapitools/openapi-generator-cli": "^2.20.0",
     "autoprefixer": "^10.4.20",
     "browserify-fs": "^1.0.0",
     "buffer": "^6.0.3",
