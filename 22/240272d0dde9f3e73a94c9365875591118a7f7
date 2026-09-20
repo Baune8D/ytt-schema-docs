@@ -1,0 +1,21 @@
+.prettierignore
+  s_e0a3fc328e1d69::t_5bda273562a7a4 3
+eslint.config.mjs
+  s_e0a3fc328e1d69::t_b1827a9f81c070 19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "22240272d0dde9f3e73a94c9365875591118a7f7",
+  "prompts": {},
+  "sessions": {
+    "s_e0a3fc328e1d69": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a2cd4ddf-2d1c-4721-990e-2081a53030d1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Morten Larsen <mortenl41@gmail.com>"
+    }
+  }
+}
