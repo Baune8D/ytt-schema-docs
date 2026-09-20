@@ -1,0 +1,23 @@
+LICENSE
+  s_e0a3fc328e1d69::t_3b1227437ccb46 1-21
+README.md
+  s_e0a3fc328e1d69::t_b21b15ff979f78 3,5,7,9,11-14,16,18-20,22,24-27,29,31-32,34,36,38-121
+package.json
+  s_e0a3fc328e1d69::t_f65d18493275cf 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1edde956113711d66be22a5054e2f7f187538e6f",
+  "prompts": {},
+  "sessions": {
+    "s_e0a3fc328e1d69": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a2cd4ddf-2d1c-4721-990e-2081a53030d1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Morten Larsen <mortenl41@gmail.com>"
+    }
+  }
+}
