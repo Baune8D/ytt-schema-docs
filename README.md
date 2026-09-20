@@ -107,6 +107,8 @@ npm run lint
 npm run format
 ```
 
+Lint and build run on every pull request and on pushes to `main` via GitHub Actions.
+
 ## Publishing the example site
 
 The example site is served by GitHub Pages from the `docs` folder. To update it, build the project and copy the output into place:
