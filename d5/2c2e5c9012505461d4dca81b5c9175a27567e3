@@ -1,0 +1,21 @@
+.github/workflows/ci.yml
+  s_e0a3fc328e1d69::t_74699fe8e64941 1-32
+README.md
+  s_e0a3fc328e1d69::t_7a783e8bbaedd1 110-111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d52c2e5c9012505461d4dca81b5c9175a27567e3",
+  "prompts": {},
+  "sessions": {
+    "s_e0a3fc328e1d69": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a2cd4ddf-2d1c-4721-990e-2081a53030d1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Morten Larsen <mortenl41@gmail.com>"
+    }
+  }
+}
