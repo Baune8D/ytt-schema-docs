@@ -9,7 +9,7 @@
     "format": "prettier --write . && eslint --fix ."
   },
   "author": "Baune8D",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^11.7.0"
   },
