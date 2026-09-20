@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "npm run generate && NODE_ENV=production webpack",
+    "pages": "npm run build && cp dist/index.html dist/bundle.js dist/bundle.js.LICENSE.txt dist/main.css docs/",
     "start": "npm run generate && NODE_ENV=development webpack serve",
     "generate": "ytt --file schema.yaml --data-values-schema-inspect --output openapi-v3 | ytt -f- --file patch.yaml > schema-openapi.yaml && openapi-generator-cli generate --generator-name html2 --template-dir src --input-spec schema-openapi.yaml --output dist --inline-schema-options SKIP_SCHEMA_REUSE=true",
     "lint": "eslint . --report-unused-disable-directives --max-warnings=0",

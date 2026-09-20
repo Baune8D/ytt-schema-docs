@@ -109,11 +109,10 @@ npm run format
 
 ## Publishing the example site
 
-The example site is served from the `docs` folder. To update it, build the project and copy the output:
+The example site is served by GitHub Pages from the `docs` folder. To update it, build the project and copy the output into place:
 
 ```sh
-npm run build
-cp dist/index.html dist/bundle.js dist/bundle.js.LICENSE.txt dist/main.css docs/
+npm run pages
 ```
 
 ## License
