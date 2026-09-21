@@ -1,69 +1,261 @@
 #@data/values-schema
 ---
-#@schema/title "Username"
-#@schema/desc "Required string value."
-#@schema/validation min_len=1
-username: ""
-#@schema/title "Replica amount"
-#@schema/desc "Required integer value."
-#@schema/validation min=1
-replicas: 0
-#@schema/title "Response Types"
-#@schema/desc "Required string array."
-#@schema/examples ("Example", ["<strong>Content-Length</strong>"])
-#@schema/validation min_len=1
-responseTypes:
-  - ""
-#@schema/title "Credentials"
-#@schema/desc "Required map.<br/><strong><em>Click on property to go to map definition.</em></strong>"
+#@schema/title "Application Name"
+#@schema/desc "Name of the deployed application, used for resource names and labels."
+#@schema/validation min_len=1, max_len=63
+name: ""
+#@schema/title "Environment"
+#@schema/desc "Target environment. Controls defaults such as replica count and log level."
+#@schema/validation one_of=["development", "staging", "production"]
+environment: ""
+#@schema/title "Replica Count"
+#@schema/desc "Number of pod replicas. Ignored when <strong>autoscaling</strong> is enabled."
+#@schema/validation min=1, max=50
+replicas: 2
+#@schema/title "Container Image"
+#@schema/desc "Image to deploy.<br/><strong><em>Click on property to go to map definition.</em></strong>"
+image:
+  #@schema/title "Repository"
+  #@schema/desc "Image repository without tag."
+  #@schema/examples ("Example", "europe-docker.pkg.dev/acme/apps/checkout")
+  #@schema/validation min_len=1
+  repository: ""
+  #@schema/title "Tag"
+  #@schema/desc "Image tag. Defaults to the version being deployed."
+  #@schema/nullable
+  tag: ""
+  #@schema/title "Pull Policy"
+  #@schema/desc "Kubernetes image pull policy."
+  #@schema/validation one_of=["Always", "IfNotPresent", "Never"]
+  pullPolicy: "IfNotPresent"
+#@schema/title "Autoscaling"
+#@schema/desc "Horizontal pod autoscaler settings."
+autoscaling:
+  #@schema/title "Enabled"
+  #@schema/desc "Create an autoscaler instead of a fixed replica count."
+  enabled: false
+  #@schema/title "Minimum Replicas"
+  #@schema/desc "Lower bound the autoscaler never goes below."
+  #@schema/validation min=1
+  minReplicas: 2
+  #@schema/title "Maximum Replicas"
+  #@schema/desc "Upper bound the autoscaler never exceeds."
+  #@schema/validation min=1, max=100
+  maxReplicas: 10
+  #@schema/title "Target CPU Utilization"
+  #@schema/desc "Average CPU utilization in percent that triggers scaling."
+  #@schema/validation min=1, max=100
+  targetCpuPercent: 75
+#@schema/title "Resources"
+#@schema/desc "CPU and memory requests and limits for the main container."
+resources:
+  #@schema/title "Requests"
+  #@schema/desc "Guaranteed resources."
+  requests:
+    #@schema/title "CPU"
+    #@schema/examples ("Example", "250m")
+    cpu: "100m"
+    #@schema/title "Memory"
+    #@schema/examples ("Example", "256Mi")
+    memory: "128Mi"
+  #@schema/title "Limits"
+  #@schema/desc "Hard resource limits. A container exceeding its memory limit is restarted."
+  limits:
+    #@schema/title "CPU"
+    #@schema/nullable
+    cpu: ""
+    #@schema/title "Memory"
+    memory: "512Mi"
+#@schema/title "Service"
+#@schema/desc "Kubernetes service exposing the application inside the cluster."
+service:
+  #@schema/title "Service Type"
+  #@schema/validation one_of=["ClusterIP", "NodePort", "LoadBalancer"]
+  type: "ClusterIP"
+  #@schema/title "Port Number"
+  #@schema/desc "Ensure a value between min and max."
+  #@schema/validation min=1, max=65535
+  port: 1024
+  #@schema/title "Target Port"
+  #@schema/desc "Container port the service forwards to. Defaults to <strong>port</strong>."
+  #@schema/nullable
+  targetPort: 0
+  #@schema/title "LoadBalancer Selector"
+  #@schema/desc "Conditional validations can be described manually.<br/><strong><span class=\"text-danger\">Required:</span></strong> when <strong>type</strong> equals <strong>LoadBalancer</strong>."
+  #@schema/validation min_len=1, when=lambda _, ctx: ctx.parent["type"] == "LoadBalancer"
+  selector: ""
+#@schema/title "Ingress"
+#@schema/desc "Public HTTP entry point. Disabled by default."
+ingress:
+  #@schema/title "Enabled"
+  enabled: false
+  #@schema/title "Class Name"
+  #@schema/desc "Ingress controller to use."
+  className: "nginx"
+  #@schema/title "Hostnames"
+  #@schema/desc "Public hostnames routed to the service.<br/><strong><span class=\"text-danger\">Required:</span></strong> when <strong>enabled</strong> is true."
+  #@schema/examples ("Example", ["checkout.example.com"])
+  hosts:
+    - ""
+  #@schema/title "Paths"
+  #@schema/desc "Routing rules. Each rule is rendered as its own <strong>paths[]</strong> map."
+  paths:
+    -
+      #@schema/title "Path"
+      #@schema/validation min_len=1
+      path: "/"
+      #@schema/title "Path Type"
+      #@schema/validation one_of=["Prefix", "Exact", "ImplementationSpecific"]
+      pathType: "Prefix"
+  #@schema/title "TLS"
+  #@schema/desc "Certificate settings. Set to <strong>null</strong> to serve plain HTTP."
+  #@schema/nullable
+  tls:
+    #@schema/title "Secret Name"
+    #@schema/desc "Secret holding the certificate. Created by cert-manager when <strong>issuer</strong> is set."
+    #@schema/nullable
+    secretName: ""
+    #@schema/title "Issuer"
+    #@schema/validation one_of=["letsencrypt-staging", "letsencrypt-production"]
+    issuer: "letsencrypt-production"
+#@schema/title "Database"
+#@schema/desc "Relational database connection. Set to <strong>null</strong> when the application has no database."
 #@schema/nullable
-#@schema/validation not_null=True
-credential:
-  #@schema/title "Credential Name"
-  #@schema/desc "Credential name value."
+database:
+  #@schema/title "Engine"
+  #@schema/validation one_of=["postgres", "mysql", "sqlserver"]
+  engine: ""
+  #@schema/title "Host"
+  #@schema/validation min_len=1
+  host: ""
+  #@schema/title "Port"
+  #@schema/desc "Defaults to the engine's standard port when 0."
+  #@schema/validation min=0, max=65535
+  port: 0
+  #@schema/title "Database Name"
   #@schema/validation min_len=1
   name: ""
-  #@schema/title "Cloud Credential"
-  #@schema/desc "Credential key value."
+  #@schema/title "Credentials"
+  #@schema/desc "Login used by the application. Exactly one of <strong>secretRef</strong> or <strong>plain</strong> must be set."
+  #@schema/validation one_not_null=["secretRef", "plain"]
+  credentials:
+    #@schema/title "Secret Reference"
+    #@schema/desc "Read username and password from an existing secret."
+    #@schema/nullable
+    secretRef:
+      #@schema/title "Secret Name"
+      #@schema/validation min_len=1
+      name: ""
+      #@schema/title "Username Key"
+      usernameKey: "username"
+      #@schema/title "Password Key"
+      passwordKey: "password"
+    #@schema/title "Plain Credentials"
+    #@schema/desc "<strong>NOTE:</strong> Only for local development. Never commit real passwords."
+    #@schema/nullable
+    plain:
+      #@schema/title "Username"
+      #@schema/validation min_len=1
+      username: ""
+      #@schema/title "Password"
+      #@schema/desc "Ensure a minimum string length."
+      #@schema/validation min_len=8
+      password: ""
+#@schema/title "Cache"
+#@schema/desc "Optional Redis cache."
+#@schema/nullable
+cache:
+  #@schema/title "Host"
   #@schema/validation min_len=1
-  cloud: ""
-#@schema/title "Password"
-#@schema/desc "Ensure exact string length."
-#@schema/validation min_len=8, max_len=8
-password: ""
-#@schema/title "Port Number"
-#@schema/desc "Ensure a value between min and max."
-#@schema/validation min=1, max=65535
-port: 1024
-#@schema/title "Cloud Provider"
-#@schema/desc "Enumeration of string values."
-#@schema/validation one_of=["aws", "azure", "vsphere"]
-provider: ""
-#@schema/title "Auth Configuration"
-#@schema/desc "Exactly one sub property is specified."
-#@schema/validation one_not_null=["oidc", "ldap"]
-config:
-  #@schema/title "OpenID Connect Protocol"
-  #@schema/desc "<strong>NOTE:</strong> Only one of <strong>oidc</strong> or <strong>ldap</strong> can be specified at a time!"
-  #@schema/nullable
-  oidc:
-    #@schema/title "Client ID"
-    #@schema/desc "OIDC Client ID."
-    client_id: ""
-  #@schema/title "Lightweight Directory Access Protocol"
-  #@schema/desc "<strong>NOTE:</strong> Only one of <strong>oidc</strong> or <strong>ldap</strong> can be specified at a time!"
-  #@schema/nullable
-  ldap:
-    #@schema/title "Hostname"
-    #@schema/desc "LDAP hostname."
-    host: ""
-#@schema/title "LoadBalancer Selector"
-#@schema/desc "Conditional validations can be described manually.<br/><strong><span class=\"text-danger\">Required:</span></strong> when <strong>type</strong> equals <strong>LoadBalancer</strong>."
-#@schema/validation min_len=1, when=lambda _, ctx: ctx.parent["type"] == "LoadBalancer"
-selector: ""
-#@schema/title "Environment Value"
+  host: ""
+  #@schema/title "Port"
+  #@schema/validation min=1, max=65535
+  port: 6379
+  #@schema/title "TTL Seconds"
+  #@schema/desc "Default time to live for cached entries."
+  #@schema/validation min=1
+  ttlSeconds: 300
+#@schema/title "Environment Variables"
+#@schema/desc "Extra variables injected into the main container."
+env:
+  -
+    #@schema/title "Variable Name"
+    #@schema/validation min_len=1
+    name: ""
+    #@schema/title "Value"
+    #@schema/desc "Literal value. Use <strong>secretRef</strong> for sensitive values."
+    #@schema/nullable
+    value: ""
+    #@schema/title "Secret Reference"
+    #@schema/desc "Read the value from a secret instead of <strong>value</strong>."
+    #@schema/nullable
+    secretRef:
+      #@schema/title "Secret Name"
+      #@schema/validation min_len=1
+      name: ""
+      #@schema/title "Key"
+      #@schema/validation min_len=1
+      key: ""
+#@schema/title "Scheduled Jobs"
+#@schema/desc "Cron jobs deployed alongside the application, sharing its image."
+jobs:
+  -
+    #@schema/title "Job Name"
+    #@schema/validation min_len=1, max_len=52
+    name: ""
+    #@schema/title "Schedule"
+    #@schema/desc "Cron expression in UTC."
+    #@schema/examples ("Every night at 02:00", "0 2 * * *")
+    #@schema/validation min_len=1
+    schedule: ""
+    #@schema/title "Command"
+    #@schema/desc "Command and arguments to run."
+    #@schema/validation min_len=1
+    command:
+      - ""
+    #@schema/title "Suspend"
+    #@schema/desc "Keep the job defined but never run it."
+    suspend: false
+    #@schema/title "Concurrency Policy"
+    #@schema/validation one_of=["Allow", "Forbid", "Replace"]
+    concurrencyPolicy: "Forbid"
+#@schema/title "Monitoring"
+#@schema/desc "Observability integrations."
+monitoring:
+  #@schema/title "Metrics"
+  metrics:
+    #@schema/title "Enabled"
+    #@schema/desc "Expose Prometheus metrics and create a scrape target."
+    enabled: true
+    #@schema/title "Path"
+    path: "/metrics"
+    #@schema/title "Port"
+    #@schema/validation min=1, max=65535
+    port: 9090
+  #@schema/title "Tracing"
+  tracing:
+    #@schema/title "Enabled"
+    enabled: false
+    #@schema/title "Sample Rate"
+    #@schema/desc "Fraction of requests to trace, between 0 and 1."
+    #@schema/validation min=0, max=1
+    sampleRate: 0.1
+  #@schema/title "Alert Channels"
+  #@schema/desc "Slack channels notified on alerts."
+  #@schema/examples ("Example", ["#checkout-alerts"])
+  alertChannels:
+    - ""
+#@schema/title "Annotations"
 #@schema/desc "Type is <strong>any</strong>, but we can use <strong>#@schema/examples</strong> to manually define values."
-#@schema/examples ("Type", "[\"<strong>string</strong>\", \"<strong>integer</strong>\", \"<strong>boolean</strong>\"]")
+#@schema/examples ("Type", "map of <strong>string</strong> to <strong>string</strong>")
 #@schema/nullable
 #@schema/type any=True
-environment: ""
+annotations: ""
+#@schema/title "__REMOVE_ME__"
+#@schema/desc "Internal settings hidden from the documentation."
+internal:
+  featureFlags:
+    - ""
+  debug: false
+#@schema/title "__REMOVE_ME__"
+legacyName: ""

@@ -40,66 +40,282 @@
     </div>
     <script>
         window.defs = {}
-                window.defs["Auth_Configuration"] = {
-  "title" : "Auth Configuration",
+                window.defs["Autoscaling"] = {
+  "title" : "Autoscaling",
   "type" : "object",
   "properties" : {
-    "oidc" : {
-      "$ref" : "#/components/schemas/OpenID_Connect_Protocol"
+    "enabled" : {
+      "title" : "Enabled",
+      "type" : "boolean",
+      "description" : "Create an autoscaler instead of a fixed replica count.",
+      "default" : false
     },
-    "ldap" : {
-      "$ref" : "#/components/schemas/Lightweight_Directory_Access_Protocol"
+    "minReplicas" : {
+      "title" : "Minimum Replicas",
+      "minimum" : 1,
+      "type" : "integer",
+      "description" : "Lower bound the autoscaler never goes below.",
+      "default" : 2
+    },
+    "maxReplicas" : {
+      "title" : "Maximum Replicas",
+      "maximum" : 100,
+      "minimum" : 1,
+      "type" : "integer",
+      "description" : "Upper bound the autoscaler never exceeds.",
+      "default" : 10
+    },
+    "targetCpuPercent" : {
+      "title" : "Target CPU Utilization",
+      "maximum" : 100,
+      "minimum" : 1,
+      "type" : "integer",
+      "description" : "Average CPU utilization in percent that triggers scaling.",
+      "default" : 75
     }
   },
   "additionalProperties" : false,
-  "description" : "Exactly one sub property is specified."
+  "description" : "Horizontal pod autoscaler settings."
+};
+                window.defs["Cache"] = {
+  "title" : "Cache",
+  "type" : "object",
+  "properties" : {
+    "host" : {
+      "title" : "Host",
+      "minLength" : 1,
+      "type" : "string",
+      "default" : ""
+    },
+    "port" : {
+      "title" : "Port",
+      "maximum" : 65535,
+      "minimum" : 1,
+      "type" : "integer",
+      "default" : 6379
+    },
+    "ttlSeconds" : {
+      "title" : "TTL Seconds",
+      "minimum" : 1,
+      "type" : "integer",
+      "description" : "Default time to live for cached entries.",
+      "default" : 300
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Optional Redis cache.",
+  "nullable" : true
+};
+                window.defs["Container_Image"] = {
+  "title" : "Container Image",
+  "type" : "object",
+  "properties" : {
+    "repository" : {
+      "title" : "Repository",
+      "minLength" : 1,
+      "type" : "string",
+      "description" : "Image repository without tag.",
+      "example" : "europe-docker.pkg.dev/acme/apps/checkout",
+      "default" : "",
+      "x-example-description" : "Example"
+    },
+    "tag" : {
+      "title" : "Tag",
+      "type" : "string",
+      "description" : "Image tag. Defaults to the version being deployed.",
+      "nullable" : true
+    },
+    "pullPolicy" : {
+      "title" : "Pull Policy",
+      "type" : "string",
+      "description" : "Kubernetes image pull policy.",
+      "enum" : [ "Always", "IfNotPresent", "Never" ],
+      "default" : "IfNotPresent"
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Image to deploy.<br/><strong><em>Click on property to go to map definition.</em></strong>"
 };
                 window.defs["Credentials"] = {
   "title" : "Credentials",
   "type" : "object",
   "properties" : {
-    "name" : {
-      "title" : "Credential Name",
-      "minLength" : 1,
-      "type" : "string",
-      "description" : "Credential name value.",
-      "default" : ""
+    "secretRef" : {
+      "$ref" : "#/components/schemas/Secret_Reference"
     },
-    "cloud" : {
-      "title" : "Cloud Credential",
-      "minLength" : 1,
-      "type" : "string",
-      "description" : "Credential key value.",
-      "default" : ""
+    "plain" : {
+      "$ref" : "#/components/schemas/Plain_Credentials"
     }
   },
   "additionalProperties" : false,
-  "description" : "Required map.<br/><strong><em>Click on property to go to map definition.</em></strong>",
-  "nullable" : true
+  "description" : "Login used by the application. Exactly one of <strong>secretRef</strong> or <strong>plain</strong> must be set."
 };
                 window.defs["dataValues"] = {
   "type" : "object",
   "properties" : {
-    "username" : {
-      "title" : "Username",
+    "name" : {
+      "title" : "Application Name",
+      "maxLength" : 63,
       "minLength" : 1,
       "type" : "string",
-      "description" : "Required string value.",
+      "description" : "Name of the deployed application, used for resource names and labels.",
+      "default" : ""
+    },
+    "environment" : {
+      "title" : "Environment",
+      "type" : "string",
+      "description" : "Target environment. Controls defaults such as replica count and log level.",
+      "enum" : [ "development", "staging", "production" ],
       "default" : ""
     },
     "replicas" : {
-      "title" : "Replica amount",
+      "title" : "Replica Count",
+      "maximum" : 50,
       "minimum" : 1,
       "type" : "integer",
-      "description" : "Required integer value.",
+      "description" : "Number of pod replicas. Ignored when <strong>autoscaling</strong> is enabled.",
+      "default" : 2
+    },
+    "image" : {
+      "$ref" : "#/components/schemas/Container_Image"
+    },
+    "autoscaling" : {
+      "$ref" : "#/components/schemas/Autoscaling"
+    },
+    "resources" : {
+      "$ref" : "#/components/schemas/Resources"
+    },
+    "service" : {
+      "$ref" : "#/components/schemas/Service"
+    },
+    "ingress" : {
+      "$ref" : "#/components/schemas/Ingress"
+    },
+    "database" : {
+      "$ref" : "#/components/schemas/Database"
+    },
+    "cache" : {
+      "$ref" : "#/components/schemas/Cache"
+    },
+    "env" : {
+      "title" : "Environment Variables",
+      "type" : "array",
+      "description" : "Extra variables injected into the main container.",
+      "items" : {
+        "$ref" : "#/components/schemas/Environment_Variables_inner"
+      },
+      "default" : [ ]
+    },
+    "jobs" : {
+      "title" : "Scheduled Jobs",
+      "type" : "array",
+      "description" : "Cron jobs deployed alongside the application, sharing its image.",
+      "items" : {
+        "$ref" : "#/components/schemas/Scheduled_Jobs_inner"
+      },
+      "default" : [ ]
+    },
+    "monitoring" : {
+      "$ref" : "#/components/schemas/Monitoring"
+    },
+    "annotations" : {
+      "title" : "Annotations",
+      "description" : "Type is <strong>any</strong>, but we can use <strong>#@schema/examples</strong> to manually define values.",
+      "nullable" : true,
+      "example" : "map of <strong>string</strong> to <strong>string</strong>",
+      "default" : null,
+      "x-example-description" : "Type"
+    },
+    "internal" : {
+      "$ref" : "#/components/schemas/__REMOVE_ME__"
+    },
+    "legacyName" : {
+      "title" : "__REMOVE_ME__",
+      "type" : "string",
+      "default" : ""
+    }
+  },
+  "additionalProperties" : false
+};
+                window.defs["Database"] = {
+  "title" : "Database",
+  "type" : "object",
+  "properties" : {
+    "engine" : {
+      "title" : "Engine",
+      "type" : "string",
+      "enum" : [ "postgres", "mysql", "sqlserver" ],
+      "default" : ""
+    },
+    "host" : {
+      "title" : "Host",
+      "minLength" : 1,
+      "type" : "string",
+      "default" : ""
+    },
+    "port" : {
+      "title" : "Port",
+      "maximum" : 65535,
+      "minimum" : 0,
+      "type" : "integer",
+      "description" : "Defaults to the engine's standard port when 0.",
       "default" : 0
     },
-    "responseTypes" : {
-      "title" : "Response Types",
-      "minItems" : 1,
+    "name" : {
+      "title" : "Database Name",
+      "minLength" : 1,
+      "type" : "string",
+      "default" : ""
+    },
+    "credentials" : {
+      "$ref" : "#/components/schemas/Credentials"
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Relational database connection. Set to <strong>null</strong> when the application has no database.",
+  "nullable" : true
+};
+                window.defs["Environment_Variables_inner"] = {
+  "type" : "object",
+  "properties" : {
+    "name" : {
+      "title" : "Variable Name",
+      "minLength" : 1,
+      "type" : "string",
+      "default" : ""
+    },
+    "value" : {
+      "title" : "Value",
+      "type" : "string",
+      "description" : "Literal value. Use <strong>secretRef</strong> for sensitive values.",
+      "nullable" : true
+    },
+    "secretRef" : {
+      "$ref" : "#/components/schemas/Secret_Reference_1"
+    }
+  },
+  "additionalProperties" : false
+};
+                window.defs["Ingress"] = {
+  "title" : "Ingress",
+  "type" : "object",
+  "properties" : {
+    "enabled" : {
+      "title" : "Enabled",
+      "type" : "boolean",
+      "default" : false
+    },
+    "className" : {
+      "title" : "Class Name",
+      "type" : "string",
+      "description" : "Ingress controller to use.",
+      "default" : "nginx"
+    },
+    "hosts" : {
+      "title" : "Hostnames",
       "type" : "array",
-      "description" : "Required string array.",
-      "example" : [ "<strong>Content-Length</strong>" ],
+      "description" : "Public hostnames routed to the service.<br/><strong><span class=\"text-danger\">Required:</span></strong> when <strong>enabled</strong> is true.",
+      "example" : [ "checkout.example.com" ],
       "items" : {
         "type" : "string",
         "default" : ""
@@ -107,16 +323,287 @@
       "default" : [ ],
       "x-example-description" : "Example"
     },
-    "credential" : {
-      "$ref" : "#/components/schemas/Credentials"
+    "paths" : {
+      "title" : "Paths",
+      "type" : "array",
+      "description" : "Routing rules. Each rule is rendered as its own <strong>paths[]</strong> map.",
+      "items" : {
+        "$ref" : "#/components/schemas/Paths_inner"
+      },
+      "default" : [ ]
+    },
+    "tls" : {
+      "$ref" : "#/components/schemas/TLS"
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Public HTTP entry point. Disabled by default."
+};
+                window.defs["Limits"] = {
+  "title" : "Limits",
+  "type" : "object",
+  "properties" : {
+    "cpu" : {
+      "title" : "CPU",
+      "type" : "string",
+      "nullable" : true
+    },
+    "memory" : {
+      "title" : "Memory",
+      "type" : "string",
+      "default" : "512Mi"
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Hard resource limits. A container exceeding its memory limit is restarted."
+};
+                window.defs["Metrics"] = {
+  "title" : "Metrics",
+  "type" : "object",
+  "properties" : {
+    "enabled" : {
+      "title" : "Enabled",
+      "type" : "boolean",
+      "description" : "Expose Prometheus metrics and create a scrape target.",
+      "default" : true
+    },
+    "path" : {
+      "title" : "Path",
+      "type" : "string",
+      "default" : "/metrics"
+    },
+    "port" : {
+      "title" : "Port",
+      "maximum" : 65535,
+      "minimum" : 1,
+      "type" : "integer",
+      "default" : 9090
+    }
+  },
+  "additionalProperties" : false
+};
+                window.defs["Monitoring"] = {
+  "title" : "Monitoring",
+  "type" : "object",
+  "properties" : {
+    "metrics" : {
+      "$ref" : "#/components/schemas/Metrics"
+    },
+    "tracing" : {
+      "$ref" : "#/components/schemas/Tracing"
+    },
+    "alertChannels" : {
+      "title" : "Alert Channels",
+      "type" : "array",
+      "description" : "Slack channels notified on alerts.",
+      "example" : [ "#checkout-alerts" ],
+      "items" : {
+        "type" : "string",
+        "default" : ""
+      },
+      "default" : [ ],
+      "x-example-description" : "Example"
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Observability integrations."
+};
+                window.defs["Paths_inner"] = {
+  "type" : "object",
+  "properties" : {
+    "path" : {
+      "title" : "Path",
+      "minLength" : 1,
+      "type" : "string",
+      "default" : "/"
+    },
+    "pathType" : {
+      "title" : "Path Type",
+      "type" : "string",
+      "enum" : [ "Prefix", "Exact", "ImplementationSpecific" ],
+      "default" : "Prefix"
+    }
+  },
+  "additionalProperties" : false
+};
+                window.defs["Plain_Credentials"] = {
+  "title" : "Plain Credentials",
+  "type" : "object",
+  "properties" : {
+    "username" : {
+      "title" : "Username",
+      "minLength" : 1,
+      "type" : "string",
+      "default" : ""
     },
     "password" : {
       "title" : "Password",
-      "maxLength" : 8,
       "minLength" : 8,
       "type" : "string",
-      "description" : "Ensure exact string length.",
+      "description" : "Ensure a minimum string length.",
       "default" : ""
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "<strong>NOTE:</strong> Only for local development. Never commit real passwords.",
+  "nullable" : true
+};
+                window.defs["__REMOVE_ME__"] = {
+  "title" : "__REMOVE_ME__",
+  "type" : "object",
+  "properties" : {
+    "featureFlags" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string",
+        "default" : ""
+      },
+      "default" : [ ]
+    },
+    "debug" : {
+      "type" : "boolean",
+      "default" : false
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Internal settings hidden from the documentation."
+};
+                window.defs["Requests"] = {
+  "title" : "Requests",
+  "type" : "object",
+  "properties" : {
+    "cpu" : {
+      "title" : "CPU",
+      "type" : "string",
+      "example" : "250m",
+      "default" : "100m",
+      "x-example-description" : "Example"
+    },
+    "memory" : {
+      "title" : "Memory",
+      "type" : "string",
+      "example" : "256Mi",
+      "default" : "128Mi",
+      "x-example-description" : "Example"
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Guaranteed resources."
+};
+                window.defs["Resources"] = {
+  "title" : "Resources",
+  "type" : "object",
+  "properties" : {
+    "requests" : {
+      "$ref" : "#/components/schemas/Requests"
+    },
+    "limits" : {
+      "$ref" : "#/components/schemas/Limits"
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "CPU and memory requests and limits for the main container."
+};
+                window.defs["Scheduled_Jobs_inner"] = {
+  "type" : "object",
+  "properties" : {
+    "name" : {
+      "title" : "Job Name",
+      "maxLength" : 52,
+      "minLength" : 1,
+      "type" : "string",
+      "default" : ""
+    },
+    "schedule" : {
+      "title" : "Schedule",
+      "minLength" : 1,
+      "type" : "string",
+      "description" : "Cron expression in UTC.",
+      "example" : "0 2 * * *",
+      "default" : "",
+      "x-example-description" : "Every night at 02:00"
+    },
+    "command" : {
+      "title" : "Command",
+      "minItems" : 1,
+      "type" : "array",
+      "description" : "Command and arguments to run.",
+      "items" : {
+        "type" : "string",
+        "default" : ""
+      },
+      "default" : [ ]
+    },
+    "suspend" : {
+      "title" : "Suspend",
+      "type" : "boolean",
+      "description" : "Keep the job defined but never run it.",
+      "default" : false
+    },
+    "concurrencyPolicy" : {
+      "title" : "Concurrency Policy",
+      "type" : "string",
+      "enum" : [ "Allow", "Forbid", "Replace" ],
+      "default" : "Forbid"
+    }
+  },
+  "additionalProperties" : false
+};
+                window.defs["Secret_Reference"] = {
+  "title" : "Secret Reference",
+  "type" : "object",
+  "properties" : {
+    "name" : {
+      "title" : "Secret Name",
+      "minLength" : 1,
+      "type" : "string",
+      "default" : ""
+    },
+    "usernameKey" : {
+      "title" : "Username Key",
+      "type" : "string",
+      "default" : "username"
+    },
+    "passwordKey" : {
+      "title" : "Password Key",
+      "type" : "string",
+      "default" : "password"
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Read username and password from an existing secret.",
+  "nullable" : true
+};
+                window.defs["Secret_Reference_1"] = {
+  "title" : "Secret Reference",
+  "type" : "object",
+  "properties" : {
+    "name" : {
+      "title" : "Secret Name",
+      "minLength" : 1,
+      "type" : "string",
+      "default" : ""
+    },
+    "key" : {
+      "title" : "Key",
+      "minLength" : 1,
+      "type" : "string",
+      "default" : ""
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Read the value from a secret instead of <strong>value</strong>.",
+  "nullable" : true
+};
+                window.defs["Service"] = {
+  "title" : "Service",
+  "type" : "object",
+  "properties" : {
+    "type" : {
+      "title" : "Service Type",
+      "type" : "string",
+      "enum" : [ "ClusterIP", "NodePort", "LoadBalancer" ],
+      "default" : "ClusterIP"
     },
     "port" : {
       "title" : "Port Number",
@@ -126,62 +613,63 @@
       "description" : "Ensure a value between min and max.",
       "default" : 1024
     },
-    "provider" : {
-      "title" : "Cloud Provider",
-      "type" : "string",
-      "description" : "Enumeration of string values.",
-      "enum" : [ "aws", "azure", "vsphere" ],
-      "default" : ""
-    },
-    "config" : {
-      "$ref" : "#/components/schemas/Auth_Configuration"
+    "targetPort" : {
+      "title" : "Target Port",
+      "type" : "integer",
+      "description" : "Container port the service forwards to. Defaults to <strong>port</strong>.",
+      "nullable" : true
     },
     "selector" : {
       "title" : "LoadBalancer Selector",
       "type" : "string",
       "description" : "Conditional validations can be described manually.<br/><strong><span class=\"text-danger\">Required:</span></strong> when <strong>type</strong> equals <strong>LoadBalancer</strong>.",
       "default" : ""
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Kubernetes service exposing the application inside the cluster."
+};
+                window.defs["TLS"] = {
+  "title" : "TLS",
+  "type" : "object",
+  "properties" : {
+    "secretName" : {
+      "title" : "Secret Name",
+      "type" : "string",
+      "description" : "Secret holding the certificate. Created by cert-manager when <strong>issuer</strong> is set.",
+      "nullable" : true
     },
-    "environment" : {
-      "title" : "Environment Value",
-      "description" : "Type is <strong>any</strong>, but we can use <strong>#@schema/examples</strong> to manually define values.",
-      "nullable" : true,
-      "example" : "[\"<strong>string</strong>\", \"<strong>integer</strong>\", \"<strong>boolean</strong>\"]",
-      "default" : null,
-      "x-example-description" : "Type"
+    "issuer" : {
+      "title" : "Issuer",
+      "type" : "string",
+      "enum" : [ "letsencrypt-staging", "letsencrypt-production" ],
+      "default" : "letsencrypt-production"
+    }
+  },
+  "additionalProperties" : false,
+  "description" : "Certificate settings. Set to <strong>null</strong> to serve plain HTTP.",
+  "nullable" : true
+};
+                window.defs["Tracing"] = {
+  "title" : "Tracing",
+  "type" : "object",
+  "properties" : {
+    "enabled" : {
+      "title" : "Enabled",
+      "type" : "boolean",
+      "default" : false
+    },
+    "sampleRate" : {
+      "title" : "Sample Rate",
+      "maximum" : 1,
+      "minimum" : 0,
+      "type" : "number",
+      "description" : "Fraction of requests to trace, between 0 and 1.",
+      "format" : "float",
+      "default" : 0.1
     }
   },
   "additionalProperties" : false
-};
-                window.defs["Lightweight_Directory_Access_Protocol"] = {
-  "title" : "Lightweight Directory Access Protocol",
-  "type" : "object",
-  "properties" : {
-    "host" : {
-      "title" : "Hostname",
-      "type" : "string",
-      "description" : "LDAP hostname.",
-      "default" : ""
-    }
-  },
-  "additionalProperties" : false,
-  "description" : "<strong>NOTE:</strong> Only one of <strong>oidc</strong> or <strong>ldap</strong> can be specified at a time!",
-  "nullable" : true
-};
-                window.defs["OpenID_Connect_Protocol"] = {
-  "title" : "OpenID Connect Protocol",
-  "type" : "object",
-  "properties" : {
-    "client_id" : {
-      "title" : "Client ID",
-      "type" : "string",
-      "description" : "OIDC Client ID.",
-      "default" : ""
-    }
-  },
-  "additionalProperties" : false,
-  "description" : "<strong>NOTE:</strong> Only one of <strong>oidc</strong> or <strong>ldap</strong> can be specified at a time!",
-  "nullable" : true
 };
     </script>
     <script src="bundle.js"></script>
