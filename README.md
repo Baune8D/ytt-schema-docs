@@ -54,7 +54,8 @@ The documentation is built from the standard ytt schema annotations:
 | `#@schema/validation max=`     | Maximum                              |
 | `#@schema/validation one_of=`  | One of, with each value as a chip    |
 
-Arrays are shown as `array<type>`, nested maps get their own table, and non-empty default values are listed below the type.
+Arrays are shown as `array<type>`, nested maps get their own table, and default values are listed below the type.
+A required property only carries the empty placeholder ytt needs, so its default is not shown.
 Tables follow the order of the schema, and the sidebar lists every map so nested tables are one click away.
 The sidebar highlights the map currently in view, and its search box filters maps by name, title or property name.
 The site follows the system color scheme and has a toggle in the header to switch between light and dark.
@@ -87,7 +88,7 @@ Tailwind only keeps classes it finds in `src`, so a class used only inside the s
 
 ### Hiding properties
 
-Exclude a property from the rendered page by giving it a special title.
+Exclude a property from the rendered page by giving it a special title. Everything nested inside a hidden map is hidden with it.
 The schema data is still embedded in the page source, so this hides noise rather than secrets.
 
 ```yaml

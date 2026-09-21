@@ -137,6 +137,11 @@ const isRequired = (value) =>
 const isHidden = (key, value) =>
   key.startsWith(removeMe) || value.title === removeMe;
 
+const visibleProperties = (data) =>
+  Object.keys(data.properties ?? {}).filter(
+    (key) => !isHidden(key, data.properties[key]),
+  );
+
 // Display name of a map, arrays of maps are suffixed with [].
 const mapName = (data) =>
   data.isArray ? `${data.name}[]` : (data.name ?? 'root');
@@ -183,15 +188,14 @@ function getType(value) {
   return chip(result);
 }
 
-function hasDefault(value) {
-  if ('default' in value) {
-    if (Array.isArray(value.default)) {
-      return value.default.length;
-    }
-    return value.default;
-  }
-  return false;
-}
+const isEmpty = (value) =>
+  value === '' ||
+  value === null ||
+  (Array.isArray(value) && value.length === 0);
+
+// A required property only carries the empty placeholder ytt needs, so its default says nothing.
+const hasDefault = (value) =>
+  'default' in value && !isEmpty(value.default) && !isRequired(value);
 
 function appendRow(key, data, table) {
   const value = data[key];
@@ -200,11 +204,6 @@ function appendRow(key, data, table) {
   if (value.type === 'array') {
     value.items.name = key;
     value.items.isArray = true;
-  }
-
-  // Skip rendering row if title is __REMOVE_ME__
-  if (isHidden(key, value)) {
-    return;
   }
 
   const tr = el(
@@ -231,18 +230,16 @@ function appendRow(key, data, table) {
 
   const constraints = [];
 
-  const minLength = value.minLength || value.minItems;
-  if (minLength) {
-    constraints.push(minLengthText(minLength));
+  if ('minLength' in value || 'minItems' in value) {
+    constraints.push(minLengthText(value.minLength ?? value.minItems));
   }
 
   if ('minimum' in value) {
     constraints.push(minimumText(value.minimum));
   }
 
-  const maxLength = value.maxLength || value.maxItems;
-  if (maxLength) {
-    constraints.push(maxLengthText(maxLength));
+  if ('maxLength' in value || 'maxItems' in value) {
+    constraints.push(maxLengthText(value.maxLength ?? value.maxItems));
   }
 
   if ('maximum' in value) {
@@ -288,27 +285,23 @@ function resolvePath(data) {
   return path;
 }
 
+// Links to the parent maps, each followed by a chevron, or nothing for the root.
 function generateBreadCrumbs(data) {
-  const path = resolvePath(data);
+  const parents = resolvePath(data).slice(0, -1);
+  if (!parents.length) {
+    return null;
+  }
   const nav = el(
     'nav',
     'flex flex-wrap items-center gap-1.5 font-mono text-sm',
   );
   nav.setAttribute('aria-label', 'Breadcrumb');
-
-  path.forEach((entry, index) => {
-    if (index > 0) {
-      nav.append(chevron('h-3.5 w-3.5 shrink-0 text-muted'));
-    }
-    if (index === path.length - 1) {
-      const current = el('span', 'font-semibold text-heading', mapName(entry));
-      current.setAttribute('aria-current', 'page');
-      nav.append(current);
-    } else {
-      nav.append(anchorLink(entry.ref, '', mapName(entry)));
-    }
+  parents.forEach((entry) => {
+    nav.append(
+      anchorLink(entry.ref, '', mapName(entry)),
+      chevron('h-3.5 w-3.5 shrink-0 text-muted'),
+    );
   });
-
   return nav;
 }
 
@@ -320,7 +313,11 @@ function createTable(key, index) {
     return;
   }
 
-  const heading = el('h2', 'min-w-0', generateBreadCrumbs(data));
+  const heading = el(
+    'h2',
+    'font-mono text-sm font-semibold text-heading',
+    mapName(data),
+  );
   heading.id = `${key}_heading`;
 
   const header = el(
@@ -334,7 +331,12 @@ function createTable(key, index) {
         'text-xs font-semibold uppercase tracking-wide text-muted',
         'Map',
       ),
-      heading,
+      el(
+        'div',
+        'flex min-w-0 flex-wrap items-center gap-1.5',
+        generateBreadCrumbs(data),
+        heading,
+      ),
     ),
   );
   if (data.title && data.title !== removeMe && index > 0) {
@@ -377,10 +379,10 @@ function createTable(key, index) {
   section.setAttribute('aria-labelledby', heading.id);
   content.append(section);
 
-  const properties = data.properties ?? {};
-
   // Append properties to table html.
-  Object.keys(properties).forEach((prop) => appendRow(prop, properties, tbody));
+  visibleProperties(data).forEach((prop) =>
+    appendRow(prop, data.properties, tbody),
+  );
 }
 
 function createToc(keys) {
@@ -413,7 +415,7 @@ function createToc(keys) {
       item.dataset.name = [mapName(data), data.title ?? '']
         .join(' ')
         .toLowerCase();
-      item.dataset.properties = Object.keys(data.properties ?? {}).join(' ');
+      item.dataset.properties = visibleProperties(data).join(' ');
       list.append(item);
     });
 
@@ -588,9 +590,10 @@ function setupThemeToggle() {
 // Collect map keys depth first in schema order, starting from the root data values.
 function collectKeys(key, keys = []) {
   keys.push(key);
-  Object.values(defs[key].properties ?? {}).forEach((value) => {
+  visibleProperties(defs[key]).forEach((prop) => {
+    const value = defs[key].properties[prop];
     const ref = value.type === 'array' ? value.items.ref : value.ref;
-    if (ref && !keys.includes(ref)) {
+    if (ref && !keys.includes(ref) && !isHidden(ref, defs[ref])) {
       collectKeys(ref, keys);
     }
   });

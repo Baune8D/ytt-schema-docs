@@ -257,5 +257,8 @@ internal:
   featureFlags:
     - ""
   debug: false
+  #@schema/title "Debug Options"
+  debugOptions:
+    verbose: false
 #@schema/title "__REMOVE_ME__"
 legacyName: ""

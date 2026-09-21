@@ -275,6 +275,17 @@
   "description" : "Relational database connection. Set to <strong>null</strong> when the application has no database.",
   "nullable" : true
 };
+                window.defs["Debug_Options"] = {
+  "title" : "Debug Options",
+  "type" : "object",
+  "properties" : {
+    "verbose" : {
+      "type" : "boolean",
+      "default" : false
+    }
+  },
+  "additionalProperties" : false
+};
                 window.defs["Environment_Variables_inner"] = {
   "type" : "object",
   "properties" : {
@@ -463,6 +474,9 @@
     "debug" : {
       "type" : "boolean",
       "default" : false
+    },
+    "debugOptions" : {
+      "$ref" : "#/components/schemas/Debug_Options"
     }
   },
   "additionalProperties" : false,
