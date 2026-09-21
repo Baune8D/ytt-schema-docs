@@ -16,8 +16,7 @@ try {
           value.name = prop;
 
           // Add a parent reference value to all sub properties.
-          Object.keys(value.properties).forEach((key) => {
-            const entry = value.properties[key];
+          Object.values(value.properties ?? {}).forEach((entry) => {
             if (entry.type === 'array') {
               entry.items.parentRef = value.ref;
             } else {
@@ -35,21 +34,66 @@ try {
 const defs = window.defs;
 const removeMe = '__REMOVE_ME__';
 const rootKey = 'dataValues';
+const svgNs = 'http://www.w3.org/2000/svg';
 const content = document.getElementById('content');
 const toc = document.getElementById('toc');
 
 const anchorId = (ref) => `${ref}_anchor`;
 
-const chip = (text) =>
-  `<code class="inline-flex items-center rounded-md border border-line bg-chip px-1.5 py-0.5 font-mono text-xs text-heading">${text}</code>`;
+// Build an element with classes and children, strings become text nodes.
+const el = (tag, className = '', ...children) => {
+  const node = document.createElement(tag);
+  if (className) {
+    node.className = className;
+  }
+  node.append(
+    ...children.flat().filter((child) => child != null && child !== false),
+  );
+  return node;
+};
 
-const constraint = (label, value) =>
-  `<div class="flex flex-wrap items-baseline gap-x-1.5 gap-y-1"><dt class="text-muted">${label}</dt><dd class="font-medium text-body">${value}</dd></div>`;
+// Parse HTML authored in #@schema/desc and #@schema/examples without executing scripts.
+const fromHtml = (markup) => [
+  ...new DOMParser().parseFromString(String(markup), 'text/html').body
+    .childNodes,
+];
+
+const chevron = (className) => {
+  const svg = document.createElementNS(svgNs, 'svg');
+  svg.setAttribute('class', className);
+  svg.setAttribute('viewBox', '0 0 20 20');
+  svg.setAttribute('fill', 'currentColor');
+  svg.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS(svgNs, 'path');
+  path.setAttribute('fill-rule', 'evenodd');
+  path.setAttribute('clip-rule', 'evenodd');
+  path.setAttribute(
+    'd',
+    'M7.21 14.77a.75.75 0 0 1 .02-1.06L11.17 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z',
+  );
+  svg.append(path);
+  return svg;
+};
+
+const chip = (text) =>
+  el(
+    'code',
+    'inline-flex items-center rounded-md border border-line bg-chip px-1.5 py-0.5 font-mono text-xs text-heading',
+    String(text),
+  );
+
+const constraint = (label, ...value) =>
+  el(
+    'div',
+    'flex flex-wrap items-baseline gap-x-1.5 gap-y-1',
+    el('dt', 'text-muted', label),
+    el('dd', 'font-medium text-body', ...value),
+  );
 
 const enumText = (value) =>
   constraint(
     'One of',
-    `<span class="inline-flex flex-wrap gap-1">${value.enum.map(chip).join('')}</span>`,
+    el('span', 'inline-flex flex-wrap gap-1', value.enum.map(chip)),
   );
 
 const defaultText = (value) => constraint('Default', chip(value.default));
@@ -63,13 +107,24 @@ const maxLengthText = (length) => constraint('Max length', chip(length));
 const maximumText = (length) => constraint('Maximum', chip(length));
 
 const exampleText = (value) =>
-  constraint(value['x-example-description'], value.example);
+  constraint(value['x-example-description'], ...fromHtml(value.example));
 
-const requiredText = () =>
-  '<span class="inline-flex items-center rounded-full bg-danger/10 px-2 py-0.5 text-xs font-semibold text-danger ring-1 ring-inset ring-danger/30">Required</span>';
+const requiredBadge = () =>
+  el(
+    'span',
+    'inline-flex items-center rounded-full bg-danger/10 px-2 py-0.5 text-xs font-semibold text-danger ring-1 ring-inset ring-danger/30',
+    'Required',
+  );
 
-const anchorLink = (ref, text, className = '') =>
-  `<a href="#${anchorId(ref)}" class="text-accent hover:underline ${className}">${text}</a>`;
+const anchorLink = (ref, className, ...children) => {
+  const link = el(
+    'a',
+    `text-accent hover:underline ${className}`.trim(),
+    ...children,
+  );
+  link.href = `#${anchorId(ref)}`;
+  return link;
+};
 
 const isRequired = (value) =>
   ((Array.isArray(value.default) && value.default.length === 0) ||
@@ -87,36 +142,43 @@ const mapName = (data) =>
   data.isArray ? `${data.name}[]` : (data.name ?? 'root');
 
 function createTd(label) {
-  const td = document.createElement('td');
-  td.className =
-    'block px-4 py-2 align-top sm:px-6 md:table-cell md:py-4 md:first:pl-6';
-  td.innerHTML = `<div class="mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted md:hidden">${label}</div>`;
-  return td;
+  return el(
+    'td',
+    'block px-4 py-2 align-top sm:px-6 md:table-cell md:py-4 md:first:pl-6',
+    el(
+      'div',
+      'mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted md:hidden',
+      label,
+    ),
+  );
 }
 
 function getName(key, value) {
   const ref = value.type === 'array' ? value.items.ref : value.ref;
   if (ref) {
-    const icon =
-      '<svg class="ml-1 inline h-3.5 w-3.5 align-[-2px]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.17 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd"/></svg>';
     return anchorLink(
       ref,
-      `${key}${icon}`,
       'font-mono text-sm font-semibold break-all',
+      key,
+      chevron('ml-1 inline h-3.5 w-3.5 align-[-2px]'),
     );
   }
-  return `<span class="font-mono text-sm font-semibold text-heading break-all">${key}</span>`;
+  return el(
+    'span',
+    'font-mono text-sm font-semibold text-heading break-all',
+    key,
+  );
 }
 
 function getType(value) {
   let result = 'any';
   if (value.type === 'array') {
-    result = `${value.type}&lt;${value.items.type ?? 'any'}&gt;`;
+    result = `${value.type}<${value.items.type ?? 'any'}>`;
   } else if (value.type) {
     result = value.type;
   }
   if (value.nullable) {
-    result = `nullable&lt;${result}&gt;`;
+    result = `nullable<${result}>`;
   }
   return chip(result);
 }
@@ -145,70 +207,74 @@ function appendRow(key, data, table) {
     return;
   }
 
-  const tr = document.createElement('tr');
-  tr.className =
-    'block border-b border-line py-2 last:border-b-0 md:table-row md:py-0 md:transition-colors md:hover:bg-hover/50';
+  const tr = el(
+    'tr',
+    'block border-b border-line py-2 last:border-b-0 md:table-row md:py-0 md:transition-colors md:hover:bg-hover/50',
+  );
 
   const tdName = createTd('Property');
-  tdName.innerHTML += getName(key, value);
+  tdName.append(getName(key, value));
   if (value.title) {
-    tdName.innerHTML += `<div class="mt-1 text-xs text-muted">${value.title}</div>`;
+    tdName.append(el('div', 'mt-1 text-xs text-muted', value.title));
   }
-  tr.appendChild(tdName);
+  tr.append(tdName);
 
   const tdType = createTd('Type');
+  tdType.append(
+    el(
+      'div',
+      'flex flex-wrap items-center gap-2',
+      getType(value),
+      isRequired(value) ? requiredBadge() : null,
+    ),
+  );
 
-  let badges = getType(value);
-  if (isRequired(value)) {
-    badges += requiredText(value);
-  }
-  tdType.innerHTML += `<div class="flex flex-wrap items-center gap-2">${badges}</div>`;
-
-  let constraints = '';
+  const constraints = [];
 
   const minLength = value.minLength || value.minItems;
   if (minLength) {
-    constraints += minLengthText(minLength);
+    constraints.push(minLengthText(minLength));
   }
 
   if ('minimum' in value) {
-    constraints += minimumText(value.minimum);
+    constraints.push(minimumText(value.minimum));
   }
 
   const maxLength = value.maxLength || value.maxItems;
   if (maxLength) {
-    constraints += maxLengthText(maxLength);
+    constraints.push(maxLengthText(maxLength));
   }
 
   if ('maximum' in value) {
-    constraints += maximumText(value.maximum);
+    constraints.push(maximumText(value.maximum));
   }
 
   if ('enum' in value) {
-    constraints += enumText(value);
+    constraints.push(enumText(value));
   }
 
   if (hasDefault(value)) {
-    constraints += defaultText(value);
+    constraints.push(defaultText(value));
   }
 
   if ('example' in value) {
-    constraints += exampleText(value);
+    constraints.push(exampleText(value));
   }
 
-  if (constraints) {
-    tdType.innerHTML += `<dl class="mt-2 space-y-1.5 text-xs">${constraints}</dl>`;
+  if (constraints.length) {
+    tdType.append(el('dl', 'mt-2 space-y-1.5 text-xs', constraints));
   }
-
-  tr.appendChild(tdType);
+  tr.append(tdType);
 
   const tdDesc = createTd('Description');
-  tdDesc.innerHTML += value.description
-    ? `<div class="text-sm leading-relaxed">${value.description}</div>`
-    : '<span class="text-sm italic text-muted">No description</span>';
-  tr.appendChild(tdDesc);
+  tdDesc.append(
+    value.description
+      ? el('div', 'text-sm leading-relaxed', fromHtml(value.description))
+      : el('span', 'text-sm italic text-muted', 'No description'),
+  );
+  tr.append(tdDesc);
 
-  table.appendChild(tr);
+  table.append(tr);
 }
 
 // Resolve the chain of parent maps, from the root down to the given map.
@@ -224,16 +290,26 @@ function resolvePath(data) {
 
 function generateBreadCrumbs(data) {
   const path = resolvePath(data);
-  const links = path.map((entry, index) =>
-    index === path.length - 1
-      ? `<span class="font-semibold text-heading" aria-current="page">${mapName(entry)}</span>`
-      : anchorLink(entry.ref, mapName(entry)),
+  const nav = el(
+    'nav',
+    'flex flex-wrap items-center gap-1.5 font-mono text-sm',
   );
+  nav.setAttribute('aria-label', 'Breadcrumb');
 
-  const separator =
-    '<svg class="h-3.5 w-3.5 shrink-0 text-muted" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.17 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd"/></svg>';
+  path.forEach((entry, index) => {
+    if (index > 0) {
+      nav.append(chevron('h-3.5 w-3.5 shrink-0 text-muted'));
+    }
+    if (index === path.length - 1) {
+      const current = el('span', 'font-semibold text-heading', mapName(entry));
+      current.setAttribute('aria-current', 'page');
+      nav.append(current);
+    } else {
+      nav.append(anchorLink(entry.ref, '', mapName(entry)));
+    }
+  });
 
-  return `<nav class="flex flex-wrap items-center gap-1.5 font-mono text-sm" aria-label="Breadcrumb">${links.join(separator)}</nav>`;
+  return nav;
 }
 
 function createTable(key, index) {
@@ -244,75 +320,140 @@ function createTable(key, index) {
     return;
   }
 
-  const title =
-    data.title && data.title !== removeMe && index > 0
-      ? `<p class="mt-1 text-sm text-muted">${data.title}</p>`
-      : '';
+  const heading = el('h2', 'min-w-0', generateBreadCrumbs(data));
+  heading.id = `${key}_heading`;
 
-  content.innerHTML += `
-        <section id="${anchorId(key)}" class="scroll-mt-20 overflow-hidden rounded-xl border border-line bg-card shadow-sm" aria-labelledby="${key}_heading">
-            <div class="border-b border-line px-4 py-4 sm:px-6">
-                <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-muted">Map</span>
-                    <h2 id="${key}_heading" class="min-w-0">${generateBreadCrumbs(data)}</h2>
-                </div>
-                ${title}
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse text-left md:table-fixed">
-                    <thead class="hidden md:table-header-group">
-                        <tr class="border-b border-line text-xs font-semibold uppercase tracking-wide text-muted">
-                            <th class="w-1/4 px-6 py-3" scope="col">Property</th>
-                            <th class="w-[30%] px-6 py-3" scope="col">Type</th>
-                            <th class="px-6 py-3" scope="col">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="block divide-line md:table-row-group md:divide-y" id="${key}"></tbody>
-                </table>
-            </div>
-        </section>`;
+  const header = el(
+    'div',
+    'border-b border-line px-4 py-4 sm:px-6',
+    el(
+      'div',
+      'flex flex-wrap items-center gap-x-3 gap-y-1',
+      el(
+        'span',
+        'text-xs font-semibold uppercase tracking-wide text-muted',
+        'Map',
+      ),
+      heading,
+    ),
+  );
+  if (data.title && data.title !== removeMe && index > 0) {
+    header.append(el('p', 'mt-1 text-sm text-muted', data.title));
+  }
 
-  const properties = data.properties;
-  const table = document.getElementById(key);
+  const th = (label, className) => {
+    const cell = el('th', `${className} px-6 py-3`.trim(), label);
+    cell.scope = 'col';
+    return cell;
+  };
+
+  const tbody = el('tbody', 'block divide-line md:table-row-group md:divide-y');
+  tbody.id = key;
+
+  const table = el(
+    'table',
+    'w-full border-collapse text-left md:table-fixed',
+    el(
+      'thead',
+      'hidden md:table-header-group',
+      el(
+        'tr',
+        'border-b border-line text-xs font-semibold uppercase tracking-wide text-muted',
+        th('Property', 'w-1/4'),
+        th('Type', 'w-[30%]'),
+        th('Description', ''),
+      ),
+    ),
+    tbody,
+  );
+
+  const section = el(
+    'section',
+    'scroll-mt-20 overflow-hidden rounded-xl border border-line bg-card shadow-sm',
+    header,
+    el('div', 'overflow-x-auto', table),
+  );
+  section.id = anchorId(key);
+  section.setAttribute('aria-labelledby', heading.id);
+  content.append(section);
+
+  const properties = data.properties ?? {};
 
   // Append properties to table html.
-  Object.keys(properties).forEach((prop) => appendRow(prop, properties, table));
+  Object.keys(properties).forEach((prop) => appendRow(prop, properties, tbody));
 }
 
-const escapeAttr = (text) =>
-  String(text)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;');
-
 function createToc(keys) {
-  const items = keys
+  const list = el('ul', 'space-y-0.5 px-2 pb-3 lg:px-0 lg:pb-0');
+  list.id = 'toc-list';
+
+  keys
     .filter((key) => !isHidden(key, defs[key]))
-    .map((key) => {
+    .forEach((key) => {
       const data = defs[key];
       const path = resolvePath(data);
       const depth = path.length - 1;
-      const parents = path.slice(0, -1).map((entry) => entry.ref);
-      const properties = Object.keys(data.properties ?? {});
-      const name = [mapName(data), data.title ?? ''].join(' ').toLowerCase();
-      return `<li data-key="${escapeAttr(key)}" data-parents="${escapeAttr(parents.join(' '))}" data-name="${escapeAttr(name)}" data-properties="${escapeAttr(properties.join(' '))}">
-            <a href="#${anchorId(key)}" class="block rounded-md py-1 pr-2 font-mono text-sm text-body transition-colors hover:bg-hover/60 hover:text-heading" style="padding-left: ${0.5 + depth * 0.75}rem" title="${escapeAttr(mapName(data))}">
-                <span class="block truncate">${mapName(data)}</span>
-                <span class="toc-hint hidden truncate font-sans text-xs text-muted"></span>
-            </a>
-        </li>`;
-    })
-    .join('');
 
-  toc.innerHTML = `
-        <details class="rounded-xl border border-line bg-card lg:border-0 lg:bg-transparent" open>
-            <summary class="cursor-pointer select-none px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted lg:cursor-default lg:px-2 lg:py-0 lg:pb-2 lg:[&::-webkit-details-marker]:hidden lg:[&::marker]:content-none">Maps</summary>
-            <div class="z-10 bg-card px-4 pb-3 lg:sticky lg:top-0 lg:bg-page lg:px-0 lg:pb-2">
-                <input id="toc-search" type="search" placeholder="Filter maps and properties" autocomplete="off" class="w-full rounded-md border border-line bg-card px-3 py-1.5 text-sm text-body placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent" aria-label="Filter maps and properties" />
-            </div>
-            <ul id="toc-list" class="space-y-0.5 px-2 pb-3 lg:px-0 lg:pb-0">${items}</ul>
-            <p id="toc-empty" class="hidden px-4 pb-3 text-sm italic text-muted lg:px-2">No maps match</p>
-        </details>`;
+      const link = el(
+        'a',
+        'block rounded-md py-1 pr-2 font-mono text-sm text-body transition-colors hover:bg-hover/60 hover:text-heading',
+        el('span', 'block truncate', mapName(data)),
+        el('span', 'toc-hint hidden truncate font-sans text-xs text-muted'),
+      );
+      link.href = `#${anchorId(key)}`;
+      link.title = mapName(data);
+      link.style.paddingLeft = `${0.5 + depth * 0.75}rem`;
+
+      const item = el('li', '', link);
+      item.dataset.key = key;
+      item.dataset.parents = path
+        .slice(0, -1)
+        .map((entry) => entry.ref)
+        .join(' ');
+      item.dataset.name = [mapName(data), data.title ?? '']
+        .join(' ')
+        .toLowerCase();
+      item.dataset.properties = Object.keys(data.properties ?? {}).join(' ');
+      list.append(item);
+    });
+
+  const summary = el(
+    'summary',
+    'cursor-pointer select-none px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted lg:cursor-default lg:px-2 lg:py-0 lg:pb-2 lg:[&::-webkit-details-marker]:hidden lg:[&::marker]:content-none',
+    'Maps',
+  );
+
+  const input = el(
+    'input',
+    'w-full rounded-md border border-line bg-card px-3 py-1.5 text-sm text-body placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent',
+  );
+  input.id = 'toc-search';
+  input.type = 'search';
+  input.placeholder = 'Filter maps and properties';
+  input.autocomplete = 'off';
+  input.setAttribute('aria-label', 'Filter maps and properties');
+
+  const empty = el(
+    'p',
+    'hidden px-4 pb-3 text-sm italic text-muted lg:px-2',
+    'No maps match',
+  );
+  empty.id = 'toc-empty';
+
+  const details = el(
+    'details',
+    'rounded-xl border border-line bg-card lg:border-0 lg:bg-transparent',
+    summary,
+    el(
+      'div',
+      'z-10 bg-card px-4 pb-3 lg:sticky lg:top-0 lg:bg-page lg:px-0 lg:pb-2',
+      input,
+    ),
+    list,
+    empty,
+  );
+  details.open = true;
+  toc.append(details);
 }
 
 // Filter the sidebar by map name, title or property name, keeping parents of a match for context.
@@ -447,7 +588,7 @@ function setupThemeToggle() {
 // Collect map keys depth first in schema order, starting from the root data values.
 function collectKeys(key, keys = []) {
   keys.push(key);
-  Object.values(defs[key].properties).forEach((value) => {
+  Object.values(defs[key].properties ?? {}).forEach((value) => {
     const ref = value.type === 'array' ? value.items.ref : value.ref;
     if (ref && !keys.includes(ref)) {
       collectKeys(ref, keys);
@@ -458,7 +599,7 @@ function collectKeys(key, keys = []) {
 
 // The root is never dereferenced, so give it the same metadata as the other maps.
 defs[rootKey].ref = rootKey;
-Object.values(defs[rootKey].properties).forEach((entry) => {
+Object.values(defs[rootKey].properties ?? {}).forEach((entry) => {
   if (entry.type === 'array') {
     entry.items.parentRef = rootKey;
   } else {
