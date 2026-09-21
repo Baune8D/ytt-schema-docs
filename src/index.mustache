@@ -1,21 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="UTF-8" />
     <title>{{{appName}}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta charset="UTF-8" />
+    <meta name="description" content="{{appDescription}}">
     <link href="main.css" rel="stylesheet" />
+    <script>
+        // Apply a saved theme before first paint to avoid a flash.
+        try {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light' || theme === 'dark') {
+                document.documentElement.dataset.theme = theme;
+            }
+        } catch (err) {
+            console.warn(err);
+        }
+    </script>
 </head>
-<body class="container mx-auto mt-8 antialiased text-slate-400 bg-slate-900">
-    <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl lg:text-6xl text-white text-center lg:text-left">{{{appName}}}</h1>
-    <div class="flex-none lg:flex flex-wrap lg:flex-nowrap">
-        <p class="mb-2 lg:mb-6 text-lg font-normal lg:text-xl text-gray-400 text-center lg:text-left">{{{appDescription}}}</p>
-        <p class="grow"></p>
-        <p class="mb-6 text-lg font-normal lg:text-xl text-gray-400 text-center lg:text-left">Version: <span class="font-bold">{{{version}}}</span></p>
+<body class="min-h-screen bg-page text-body antialiased">
+    <header class="sticky top-0 z-20 border-b border-line bg-page/90 backdrop-blur">
+        <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+            <div class="min-w-0">
+                <h1 class="truncate text-lg font-bold tracking-tight text-heading sm:text-xl">{{{appName}}}</h1>
+                <p class="truncate text-sm text-muted">{{{appDescription}}}</p>
+            </div>
+            <div class="flex shrink-0 items-center gap-2 sm:gap-3">
+                <span class="inline-flex items-center rounded-full border border-line bg-card px-2.5 py-1 font-mono text-xs font-medium text-heading" title="Version"><span class="mr-1 font-sans font-normal text-muted">Version</span>{{{version}}}</span>
+                <button id="theme-toggle" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-line bg-card text-muted transition hover:text-heading focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="Toggle color theme" title="Toggle color theme">
+                    <svg class="h-4 w-4 dark-only" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+                    <svg class="h-4 w-4 light-only" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:grid lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10 lg:px-8">
+        <nav id="toc" class="mb-6 lg:sticky lg:top-20 lg:mb-0 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto" aria-label="Maps"></nav>
+        <main id="content" class="min-w-0 space-y-8"></main>
     </div>
-    <div id="content"></div>
     <script>
         window.defs = {}
         {{#models}}

@@ -42,19 +42,21 @@ It is a regular ytt overlay, so any other OpenAPI `info` field can be patched as
 
 The documentation is built from the standard ytt schema annotations:
 
-| Annotation                     | Rendered as                      |
-| ------------------------------ | -------------------------------- |
-| `#@schema/title`               | Subtitle below the property name |
-| `#@schema/desc`                | Description column               |
-| `#@schema/nullable`            | Type shown as `nullable<type>`   |
-| `#@schema/examples`            | `Label: value` below the type    |
-| `#@schema/validation min_len=` | Minimum length                   |
-| `#@schema/validation max_len=` | Maximum length                   |
-| `#@schema/validation min=`     | Minimum                          |
-| `#@schema/validation max=`     | Maximum                          |
-| `#@schema/validation one_of=`  | Enum                             |
+| Annotation                     | Rendered as                          |
+| ------------------------------ | ------------------------------------ |
+| `#@schema/title`               | Subtitle below the property name     |
+| `#@schema/desc`                | Description column                   |
+| `#@schema/nullable`            | Type badge shown as `nullable<type>` |
+| `#@schema/examples`            | `Label: value` below the type        |
+| `#@schema/validation min_len=` | Min length                           |
+| `#@schema/validation max_len=` | Max length                           |
+| `#@schema/validation min=`     | Minimum                              |
+| `#@schema/validation max=`     | Maximum                              |
+| `#@schema/validation one_of=`  | One of, with each value as a chip    |
 
 Arrays are shown as `array<type>`, nested maps get their own table, and non-empty default values are listed below the type.
+Tables follow the order of the schema, and the sidebar lists every map so nested tables are one click away.
+The site follows the system color scheme and has a toggle in the header to switch between light and dark.
 
 ```yaml
 #@schema/title "Port Number"
@@ -76,10 +78,10 @@ Conditional validations, such as `when=` lambdas, cannot be detected and must be
 
 HTML is allowed in `#@schema/desc` and `#@schema/examples`.
 Tailwind only keeps classes it finds in `src`, so a class used only inside the schema must be added to the `safelist` in `tailwind.config.js`.
-For example `underline` is safelisted, while `text-red-600` works because the generated markup already uses it.
+`underline` and `text-red-600` are safelisted out of the box, and `text-danger` matches the color of the **Required** badge in both light and dark mode.
 
 ```yaml
-#@schema/desc "<strong><span class=\"text-red-600\">Required:</span></strong> when <strong>type</strong> equals <strong>LoadBalancer</strong>."
+#@schema/desc "<strong><span class=\"text-danger\">Required:</span></strong> when <strong>type</strong> equals <strong>LoadBalancer</strong>."
 ```
 
 ### Hiding properties

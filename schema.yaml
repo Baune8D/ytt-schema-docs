@@ -58,7 +58,7 @@ config:
     #@schema/desc "LDAP hostname."
     host: ""
 #@schema/title "LoadBalancer Selector"
-#@schema/desc "Conditional validations can be described manually.<br/><strong><span class=\"text-red-600\">Required:</span></strong> when <strong>type</strong> equals <strong>LoadBalancer</strong>."
+#@schema/desc "Conditional validations can be described manually.<br/><strong><span class=\"text-danger\">Required:</span></strong> when <strong>type</strong> equals <strong>LoadBalancer</strong>."
 #@schema/validation min_len=1, when=lambda _, ctx: ctx.parent["type"] == "LoadBalancer"
 selector: ""
 #@schema/title "Environment Value"

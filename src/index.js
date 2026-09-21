@@ -34,36 +34,42 @@ try {
 
 const defs = window.defs;
 const removeMe = '__REMOVE_ME__';
+const rootKey = 'dataValues';
 const content = document.getElementById('content');
+const toc = document.getElementById('toc');
 
-const subText = (text) => `<div class="text-xs mt-1">${text}</div>`;
+const anchorId = (ref) => `${ref}_anchor`;
+
+const chip = (text) =>
+  `<code class="inline-flex items-center rounded-md border border-line bg-chip px-1.5 py-0.5 font-mono text-xs text-heading">${text}</code>`;
+
+const constraint = (label, value) =>
+  `<div class="flex flex-wrap items-baseline gap-x-1.5 gap-y-1"><dt class="text-muted">${label}</dt><dd class="font-medium text-body">${value}</dd></div>`;
 
 const enumText = (value) =>
-  subText(
-    `Enum: ["<strong>${value.enum.join('</strong>", "<strong>')}</strong>"]`,
+  constraint(
+    'One of',
+    `<span class="inline-flex flex-wrap gap-1">${value.enum.map(chip).join('')}</span>`,
   );
 
-const defaultText = (value) =>
-  subText(`Default: <strong>${value.default}</strong>`);
+const defaultText = (value) => constraint('Default', chip(value.default));
 
-const minLengthText = (length) =>
-  subText(`Minimum length: <strong>${length}</strong>`);
+const minLengthText = (length) => constraint('Min length', chip(length));
 
-const minimumText = (length) => subText(`Minimum: <strong>${length}</strong>`);
+const minimumText = (length) => constraint('Minimum', chip(length));
 
-const maxLengthText = (length) =>
-  subText(`Maximum length: <strong>${length}</strong>`);
+const maxLengthText = (length) => constraint('Max length', chip(length));
 
-const maximumText = (length) => subText(`Maximum: <strong>${length}</strong>`);
+const maximumText = (length) => constraint('Maximum', chip(length));
 
 const exampleText = (value) =>
-  subText(`${value['x-example-description']}: ${value.example}`);
+  constraint(value['x-example-description'], value.example);
 
 const requiredText = () =>
-  '<span class="font-bold italic text-red-600 text-xs ml-2">Required</span>';
+  '<span class="inline-flex items-center rounded-full bg-danger/10 px-2 py-0.5 text-xs font-semibold text-danger ring-1 ring-inset ring-danger/30">Required</span>';
 
-const anchorLink = (ref, text) =>
-  `<a href="#${ref}_anchor" class="text-blue-600 hover:underline">${text}</a>`;
+const anchorLink = (ref, text, className = '') =>
+  `<a href="#${anchorId(ref)}" class="text-accent hover:underline ${className}">${text}</a>`;
 
 const isRequired = (value) =>
   ((Array.isArray(value.default) && value.default.length === 0) ||
@@ -73,38 +79,46 @@ const isRequired = (value) =>
     value.minItems ||
     value.minimum);
 
-function createTd(index) {
+const isHidden = (key, value) =>
+  key.startsWith(removeMe) || value.title === removeMe;
+
+// Display name of a map, arrays of maps are suffixed with [].
+const mapName = (data) =>
+  data.isArray ? `${data.name}[]` : (data.name ?? 'root');
+
+function createTd(label) {
   const td = document.createElement('td');
-  if (index % 2 === 0) {
-    td.className = 'border-b border-slate-700 p-4 text-slate-400';
-  } else {
-    td.className = 'border-b border-slate-700 p-4 pl-8 text-slate-400';
-  }
-  td.innerHTML = '';
+  td.className =
+    'block px-4 py-2 align-top sm:px-6 md:table-cell md:py-4 md:first:pl-6';
+  td.innerHTML = `<div class="mb-1 text-[0.65rem] font-semibold uppercase tracking-wide text-muted md:hidden">${label}</div>`;
   return td;
 }
 
 function getName(key, value) {
-  let result = key;
-  if (value.type === 'array' && value.items.ref) {
-    result = anchorLink(value.items.ref, result);
-  } else if (value.ref) {
-    result = anchorLink(value.ref, result);
+  const ref = value.type === 'array' ? value.items.ref : value.ref;
+  if (ref) {
+    const icon =
+      '<svg class="ml-1 inline h-3.5 w-3.5 align-[-2px]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.17 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd"/></svg>';
+    return anchorLink(
+      ref,
+      `${key}${icon}`,
+      'font-mono text-sm font-semibold break-all',
+    );
   }
-  return `<div class="font-bold">${result}</div>`;
+  return `<span class="font-mono text-sm font-semibold text-heading break-all">${key}</span>`;
 }
 
 function getType(value) {
   let result = 'any';
   if (value.type === 'array') {
-    result = `${value.type}&lt;${value.items.type}&gt;`;
+    result = `${value.type}&lt;${value.items.type ?? 'any'}&gt;`;
   } else if (value.type) {
     result = value.type;
   }
   if (value.nullable) {
     result = `nullable&lt;${result}&gt;`;
   }
-  return `<span class="font-bold italic">${result}</span>`;
+  return chip(result);
 }
 
 function hasDefault(value) {
@@ -126,127 +140,137 @@ function appendRow(key, data, table) {
     value.items.isArray = true;
   }
 
-  const tr = document.createElement('tr');
+  // Skip rendering row if title is __REMOVE_ME__
+  if (isHidden(key, value)) {
+    return;
+  }
 
-  const tdName = createTd(1);
+  const tr = document.createElement('tr');
+  tr.className =
+    'block border-b border-line py-2 last:border-b-0 md:table-row md:py-0 md:transition-colors md:hover:bg-hover/50';
+
+  const tdName = createTd('Property');
   tdName.innerHTML += getName(key, value);
-  if ('title' in value) {
-    if (value.title === removeMe) {
-      return;
-    }
-    tdName.innerHTML += `<div class="italic text-sm mt-1">${value.title}</div>`;
+  if (value.title) {
+    tdName.innerHTML += `<div class="mt-1 text-xs text-muted">${value.title}</div>`;
   }
   tr.appendChild(tdName);
 
-  const tdType = createTd(2);
+  const tdType = createTd('Type');
 
-  tdType.innerHTML += getType(value);
-
+  let badges = getType(value);
   if (isRequired(value)) {
-    tdType.innerHTML += requiredText(value);
+    badges += requiredText(value);
   }
+  tdType.innerHTML += `<div class="flex flex-wrap items-center gap-2">${badges}</div>`;
+
+  let constraints = '';
 
   const minLength = value.minLength || value.minItems;
   if (minLength) {
-    tdType.innerHTML += minLengthText(minLength);
+    constraints += minLengthText(minLength);
   }
 
   if (value.minimum) {
-    tdType.innerHTML += minimumText(value.minimum);
+    constraints += minimumText(value.minimum);
   }
 
   const maxLength = value.maxLength || value.maxItems;
   if (maxLength) {
-    tdType.innerHTML += maxLengthText(maxLength);
+    constraints += maxLengthText(maxLength);
   }
 
   if (value.maximum) {
-    tdType.innerHTML += maximumText(value.maximum);
+    constraints += maximumText(value.maximum);
   }
 
   if ('enum' in value) {
-    tdType.innerHTML += enumText(value);
+    constraints += enumText(value);
   }
 
   if (hasDefault(value)) {
-    tdType.innerHTML += defaultText(value);
+    constraints += defaultText(value);
   }
 
   if ('example' in value) {
-    tdType.innerHTML += exampleText(value);
+    constraints += exampleText(value);
+  }
+
+  if (constraints) {
+    tdType.innerHTML += `<dl class="mt-2 space-y-1.5 text-xs">${constraints}</dl>`;
   }
 
   tr.appendChild(tdType);
 
-  const tdDesc = createTd(3);
-  tdDesc.innerHTML += value.description ? value.description : 'None';
+  const tdDesc = createTd('Description');
+  tdDesc.innerHTML += value.description
+    ? `<div class="text-sm leading-relaxed">${value.description}</div>`
+    : '<span class="text-sm italic text-muted">No description</span>';
   tr.appendChild(tdDesc);
 
   table.appendChild(tr);
 }
 
-function generateBreadCrumbs(key, index, data) {
-  const currName = data.isArray ? `${data.name}[]` : (data.name ?? 'root');
-  const links = [
-    `<span class="underline"><a id="${key}_anchor">${currName}</a></span>`,
-  ];
-
-  const resolveParentRef = (data) => {
-    if (data.parentRef) {
-      const parent = defs[data.parentRef];
-      const name = parent.isArray ? `${parent.name}[]` : parent.name;
-      links.push(anchorLink(parent.ref, name));
-      resolveParentRef(parent);
-    }
-  };
-
-  resolveParentRef(data);
-  if (index > 0) {
-    links.push(anchorLink('dataValues', 'root'));
+// Resolve the chain of parent maps, from the root down to the given map.
+function resolvePath(data) {
+  const path = [];
+  let current = data;
+  while (current) {
+    path.unshift(current);
+    current = current.parentRef ? defs[current.parentRef] : undefined;
   }
+  return path;
+}
 
-  links.reverse();
+function generateBreadCrumbs(data) {
+  const path = resolvePath(data);
+  const links = path.map((entry, index) =>
+    index === path.length - 1
+      ? `<span class="font-semibold text-heading" aria-current="page">${mapName(entry)}</span>`
+      : anchorLink(entry.ref, mapName(entry)),
+  );
 
-  return links.length > 1
-    ? links.join('<span class="text-sm mx-2 pt-1">&gt;</span>')
-    : links[0];
+  const separator =
+    '<svg class="h-3.5 w-3.5 shrink-0 text-muted" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.17 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd"/></svg>';
+
+  return `<nav class="flex flex-wrap items-center gap-1.5 font-mono text-sm" aria-label="Breadcrumb">${links.join(separator)}</nav>`;
 }
 
 function createTable(key, index) {
+  const data = defs[key];
+
   // Skip rendering table if title begins with __REMOVE_ME__
-  if (key.startsWith(removeMe)) {
+  if (isHidden(key, data)) {
     return;
   }
 
-  const data = defs[key];
-  const breadCrumbs = generateBreadCrumbs(key, index, data);
+  const title =
+    data.title && data.title !== removeMe && index > 0
+      ? `<p class="mt-1 text-sm text-muted">${data.title}</p>`
+      : '';
 
   content.innerHTML += `
-        <div class="not-prose relative rounded-xl overflow-hidden bg-slate-800/25 ${index !== 0 ? 'mt-8' : ''}">
-            <div class="inset-0 bg-grid-slate-700/25">
-                <div class="relative rounded-xl overflow-auto">
-                    <div class="shadow-sm overflow-hidden my-8">
-                        <table class="border-collapse table-fixed w-full text-sm">
-                            <thead>
-                                <tr>
-                                    <th class="border-slate-600 font-medium p-4 pl-8 pt-0 pb-8 text-slate-200 text-left text-2xl" colspan="3">
-                                        <div class="flex items-center flex-wrap">
-                                            <span class="mr-2 font-bold">Map:</span>${breadCrumbs}
-                                        </div>
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th class="border-b border-slate-600 font-bold p-4 pl-8 pt-0 pb-3 text-slate-200 text-left">Property</th>
-                                    <th class="border-b border-slate-600 font-bold p-4 pt-0 pb-3 text-slate-200 text-left">Type</th>
-                                    <th class="border-b border-slate-600 font-bold p-4 pl-8 pt-0 pb-3 text-slate-200 text-left">Description</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-slate-800" id="${key}"></tbody>
-                        </table>
-                    </div>
+        <section id="${anchorId(key)}" class="scroll-mt-20 overflow-hidden rounded-xl border border-line bg-card shadow-sm" aria-labelledby="${key}_heading">
+            <div class="border-b border-line px-4 py-4 sm:px-6">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span class="text-xs font-semibold uppercase tracking-wide text-muted">Map</span>
+                    <h2 id="${key}_heading" class="min-w-0">${generateBreadCrumbs(data)}</h2>
                 </div>
+                ${title}
             </div>
-        </div>`;
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-left md:table-fixed">
+                    <thead class="hidden md:table-header-group">
+                        <tr class="border-b border-line text-xs font-semibold uppercase tracking-wide text-muted">
+                            <th class="w-1/4 px-6 py-3" scope="col">Property</th>
+                            <th class="w-[30%] px-6 py-3" scope="col">Type</th>
+                            <th class="px-6 py-3" scope="col">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="block divide-line md:table-row-group md:divide-y" id="${key}"></tbody>
+                </table>
+            </div>
+        </section>`;
 
   const properties = data.properties;
   const table = document.getElementById(key);
@@ -255,9 +279,64 @@ function createTable(key, index) {
   Object.keys(properties).forEach((prop) => appendRow(prop, properties, table));
 }
 
-// Make sure root data values is rendered first.
-const keys = Object.keys(defs).filter((key) => key !== 'dataValues');
-keys.unshift('dataValues');
+function createToc(keys) {
+  const items = keys
+    .filter((key) => !isHidden(key, defs[key]))
+    .map((key) => {
+      const data = defs[key];
+      const depth = resolvePath(data).length - 1;
+      return `<li><a href="#${anchorId(key)}" class="block truncate rounded-md py-1 pr-2 font-mono text-sm text-body transition-colors hover:bg-hover/60 hover:text-heading" style="padding-left: ${0.5 + depth * 0.75}rem" title="${mapName(data)}">${mapName(data)}</a></li>`;
+    })
+    .join('');
+
+  toc.innerHTML = `
+        <details class="rounded-xl border border-line bg-card lg:border-0 lg:bg-transparent" open>
+            <summary class="cursor-pointer select-none px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted lg:cursor-default lg:px-2 lg:py-0 lg:pb-2 lg:[&::-webkit-details-marker]:hidden lg:[&::marker]:content-none">Maps</summary>
+            <ul class="space-y-0.5 px-2 pb-3 lg:px-0 lg:pb-0">${items}</ul>
+        </details>`;
+}
+
+function setupThemeToggle() {
+  const button = document.getElementById('theme-toggle');
+  if (!button) {
+    return;
+  }
+  button.addEventListener('click', () => {
+    const root = document.documentElement;
+    const prefersDark = window.matchMedia(
+      '(prefers-color-scheme: dark)',
+    ).matches;
+    const isDark = root.dataset.theme
+      ? root.dataset.theme === 'dark'
+      : prefersDark;
+    const next = isDark ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem('theme', next);
+    } catch (err) {
+      console.warn(err);
+    }
+  });
+}
+
+// Collect map keys depth first in schema order, starting from the root data values.
+function collectKeys(key, keys = []) {
+  keys.push(key);
+  Object.values(defs[key].properties).forEach((value) => {
+    const ref = value.type === 'array' ? value.items.ref : value.ref;
+    if (ref && !keys.includes(ref)) {
+      collectKeys(ref, keys);
+    }
+  });
+  return keys;
+}
+
+// The root is never dereferenced, so give it the same metadata as the other maps.
+defs[rootKey].ref = rootKey;
+
+const keys = collectKeys(rootKey);
 
 // Render all properties to tables.
 keys.forEach((key, index) => createTable(key, index));
+createToc(keys);
+setupThemeToggle();
