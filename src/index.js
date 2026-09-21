@@ -333,6 +333,13 @@ function collectKeys(key, keys = []) {
 
 // The root is never dereferenced, so give it the same metadata as the other maps.
 defs[rootKey].ref = rootKey;
+Object.values(defs[rootKey].properties).forEach((entry) => {
+  if (entry.type === 'array') {
+    entry.items.parentRef = rootKey;
+  } else {
+    entry.parentRef = rootKey;
+  }
+});
 
 const keys = collectKeys(rootKey);
 
