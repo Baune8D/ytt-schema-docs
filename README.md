@@ -69,11 +69,12 @@ port: 1024
 
 ### Required properties
 
-A property is marked as **Required** when its default value is empty (`""`, `[]` or `0`) and one of the following applies:
+A property is marked as **Required** when its default value fails its own validation, so a value has to be supplied:
 
-- `min_len` or `min` validation
-- `one_of` validation on a non-nullable property
+- an empty default (`""`, `[]` or `0`) with a `min_len` or `min` validation
+- a default that is not one of the `one_of` values
 
+A `#@schema/nullable` property defaults to `null`, which ytt does not validate, so it is never marked as required.
 Conditional validations, such as `when=` lambdas, cannot be detected and must be described manually in `#@schema/desc`.
 
 ### HTML in descriptions

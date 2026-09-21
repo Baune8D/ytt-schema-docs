@@ -126,13 +126,26 @@ const anchorLink = (ref, className, ...children) => {
   return link;
 };
 
-const isRequired = (value) =>
-  ((Array.isArray(value.default) && value.default.length === 0) ||
-    !value.default) &&
-  (('enum' in value && !value.nullable) ||
-    value.minLength ||
-    value.minItems ||
-    value.minimum);
+// A property is required when its default fails its own validation. A nullable
+// property defaults to null, which ytt does not validate, so it never is.
+const isRequired = (value) => {
+  const fallback = value.default;
+  if (!('default' in value) || fallback === null) {
+    return false;
+  }
+  if ('enum' in value) {
+    return !value.enum.includes(fallback);
+  }
+  const minLength = value.minLength ?? value.minItems;
+  const length =
+    typeof fallback === 'string' || Array.isArray(fallback)
+      ? fallback.length
+      : undefined;
+  return (
+    (minLength !== undefined && length < minLength) ||
+    ('minimum' in value && fallback < value.minimum)
+  );
+};
 
 const isHidden = (key, value) =>
   key.startsWith(removeMe) || value.title === removeMe;
