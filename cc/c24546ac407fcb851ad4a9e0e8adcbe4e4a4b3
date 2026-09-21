@@ -1,0 +1,35 @@
+README.md
+  s_92d54e7513214a::t_def6101ebc147f 45-55,58-59,81,84
+docs/bundle.js
+  s_92d54e7513214a::t_a1129e7eaa3e04 2
+docs/index.html
+  s_92d54e7513214a::t_23e8c4921f4c43 4,7,9-19,21-39,133-134,142
+docs/main.css
+  s_92d54e7513214a::t_a5abe6bde8e365 3
+schema.yaml
+  s_92d54e7513214a::t_f520e46641404a 61
+src/index.js
+  s_92d54e7513214a::t_ac241eb97c598f 37,39,41-47,50-52,55,57,59,61,63,66,69,71-72,82-89,91-93,98-106,108,114,121,143-147,149-150,152,154-155,159,161,163,165-167,171,175,180,184,188,192,196-200,205-208,214-220,222-223,225-231,233-236,240-241,243,247-250,253-257,259,261-273,282-337,341-342
+src/index.mustache
+  s_92d54e7513214a::t_4c1dc1eb2dcf54 4,7,9-19,21-39
+src/style.css
+  s_92d54e7513214a::t_77bd61a2489fe4 4-70
+tailwind.config.js
+  s_92d54e7513214a::t_c5a79e0d2dd65d 2-3,7-20,23-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ccc24546ac407fcb851ad4a9e0e8adcbe4e4a4b3",
+  "prompts": {},
+  "sessions": {
+    "s_92d54e7513214a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dadb9747-cc8a-4cb6-9f55-83711889ddeb",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Morten Larsen <mortenl41@gmail.com>"
+    }
+  }
+}

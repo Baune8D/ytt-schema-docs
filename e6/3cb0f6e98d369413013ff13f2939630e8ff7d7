@@ -1,0 +1,25 @@
+docs/bundle.js
+  s_92d54e7513214a::t_7c2fbdf11de5fc 2
+docs/index.html
+  s_92d54e7513214a::t_42819defed3cde 43-44,47-51,53-133,137,142-154,157-158,161-168,171-251,255-271,275,278,281-282,287-377,380-390,392-396,398-399,406-418,420-437,443-514,517-607,616-620,629-630,632-633,636-637,639-646,650,653-654,657-669,672
+docs/main.css
+  s_92d54e7513214a::t_eda08a20efc86b 3
+schema.yaml
+  s_92d54e7513214a::t_0eb6f0ffeda7e9 3-122,124-135,138-168,170-248,250,253-261
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e63cb0f6e98d369413013ff13f2939630e8ff7d7",
+  "prompts": {},
+  "sessions": {
+    "s_92d54e7513214a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dadb9747-cc8a-4cb6-9f55-83711889ddeb",
+        "model": "unknown"
+      },
+      "human_author": "Morten Larsen <mortenl41@gmail.com>"
+    }
+  }
+}

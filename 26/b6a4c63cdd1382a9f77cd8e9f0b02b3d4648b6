@@ -1,0 +1,27 @@
+README.md
+  s_92d54e7513214a::t_ef794b518c4a91 57-58,91
+schema.yaml
+  s_92d54e7513214a::t_610d19781d7a2e 260-262
+src/index.js
+  s_92d54e7513214a::t_938bd99d0b044e 140-144,191-198,233-234,241-242,288,290-293,299-303,316-320,334-339,383-385,418,593-594,596
+docs/bundle.js
+  s_92d54e7513214a::t_f63ba0cee4441e 2
+docs/index.html
+  s_92d54e7513214a::t_181233af2e8526 277-287,477-479
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "26b6a4c63cdd1382a9f77cd8e9f0b02b3d4648b6",
+  "prompts": {},
+  "sessions": {
+    "s_92d54e7513214a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dadb9747-cc8a-4cb6-9f55-83711889ddeb",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "Morten Larsen <mortenl41@gmail.com>"
+    }
+  }
+}
