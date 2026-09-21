@@ -525,7 +525,7 @@ function setupTocSearch() {
   });
 }
 
-// Highlight the map being read, the first one not yet half scrolled past or still covering the top half of the viewport.
+// Highlight the first map whose title row is in the upper half of the viewport, or the map scrolled into when none is.
 function setupScrollSpy() {
   const sections = [...document.querySelectorAll('main section')];
   const links = new Map(
@@ -541,12 +541,17 @@ function setupScrollSpy() {
     const atBottom =
       window.innerHeight + window.scrollY >=
       document.documentElement.scrollHeight - 2;
-    const headerLine = 96;
+    const headerBottom = document.querySelector('header').offsetHeight;
     const center = window.innerHeight / 2;
-    let current = sections.find((section) => {
-      const rect = section.getBoundingClientRect();
-      return rect.top + rect.height / 2 > headerLine || rect.bottom > center;
-    });
+    const tops = sections.map((section) => section.getBoundingClientRect().top);
+    let current = sections.find(
+      (section, index) => tops[index] >= headerBottom && tops[index] <= center,
+    );
+    if (!current) {
+      current = sections.findLast(
+        (section, index) => tops[index] < headerBottom,
+      );
+    }
     if (atBottom || !current) {
       current = sections[sections.length - 1];
     }
