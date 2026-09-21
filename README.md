@@ -56,6 +56,7 @@ The documentation is built from the standard ytt schema annotations:
 
 Arrays are shown as `array<type>`, nested maps get their own table, and non-empty default values are listed below the type.
 Tables follow the order of the schema, and the sidebar lists every map so nested tables are one click away.
+The sidebar highlights the map currently in view, and its search box filters maps by name, title or property name.
 The site follows the system color scheme and has a toggle in the header to switch between light and dark.
 
 ```yaml
@@ -86,7 +87,8 @@ Tailwind only keeps classes it finds in `src`, so a class used only inside the s
 
 ### Hiding properties
 
-Exclude a property from the documentation by giving it a special title:
+Exclude a property from the rendered page by giving it a special title.
+The schema data is still embedded in the page source, so this hides noise rather than secrets.
 
 ```yaml
 #@schema/title "__REMOVE_ME__"

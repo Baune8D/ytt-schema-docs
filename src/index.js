@@ -171,7 +171,7 @@ function appendRow(key, data, table) {
     constraints += minLengthText(minLength);
   }
 
-  if (value.minimum) {
+  if ('minimum' in value) {
     constraints += minimumText(value.minimum);
   }
 
@@ -180,7 +180,7 @@ function appendRow(key, data, table) {
     constraints += maxLengthText(maxLength);
   }
 
-  if (value.maximum) {
+  if ('maximum' in value) {
     constraints += maximumText(value.maximum);
   }
 
@@ -279,21 +279,146 @@ function createTable(key, index) {
   Object.keys(properties).forEach((prop) => appendRow(prop, properties, table));
 }
 
+const escapeAttr = (text) =>
+  String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;');
+
 function createToc(keys) {
   const items = keys
     .filter((key) => !isHidden(key, defs[key]))
     .map((key) => {
       const data = defs[key];
-      const depth = resolvePath(data).length - 1;
-      return `<li><a href="#${anchorId(key)}" class="block truncate rounded-md py-1 pr-2 font-mono text-sm text-body transition-colors hover:bg-hover/60 hover:text-heading" style="padding-left: ${0.5 + depth * 0.75}rem" title="${mapName(data)}">${mapName(data)}</a></li>`;
+      const path = resolvePath(data);
+      const depth = path.length - 1;
+      const parents = path.slice(0, -1).map((entry) => entry.ref);
+      const properties = Object.keys(data.properties ?? {});
+      const name = [mapName(data), data.title ?? ''].join(' ').toLowerCase();
+      return `<li data-key="${escapeAttr(key)}" data-parents="${escapeAttr(parents.join(' '))}" data-name="${escapeAttr(name)}" data-properties="${escapeAttr(properties.join(' '))}">
+            <a href="#${anchorId(key)}" class="block rounded-md py-1 pr-2 font-mono text-sm text-body transition-colors hover:bg-hover/60 hover:text-heading" style="padding-left: ${0.5 + depth * 0.75}rem" title="${escapeAttr(mapName(data))}">
+                <span class="block truncate">${mapName(data)}</span>
+                <span class="toc-hint hidden truncate font-sans text-xs text-muted"></span>
+            </a>
+        </li>`;
     })
     .join('');
 
   toc.innerHTML = `
         <details class="rounded-xl border border-line bg-card lg:border-0 lg:bg-transparent" open>
             <summary class="cursor-pointer select-none px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted lg:cursor-default lg:px-2 lg:py-0 lg:pb-2 lg:[&::-webkit-details-marker]:hidden lg:[&::marker]:content-none">Maps</summary>
-            <ul class="space-y-0.5 px-2 pb-3 lg:px-0 lg:pb-0">${items}</ul>
+            <div class="z-10 bg-card px-4 pb-3 lg:sticky lg:top-0 lg:bg-page lg:px-0 lg:pb-2">
+                <input id="toc-search" type="search" placeholder="Filter maps and properties" autocomplete="off" class="w-full rounded-md border border-line bg-card px-3 py-1.5 text-sm text-body placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent" aria-label="Filter maps and properties" />
+            </div>
+            <ul id="toc-list" class="space-y-0.5 px-2 pb-3 lg:px-0 lg:pb-0">${items}</ul>
+            <p id="toc-empty" class="hidden px-4 pb-3 text-sm italic text-muted lg:px-2">No maps match</p>
         </details>`;
+}
+
+// Filter the sidebar by map name, title or property name, keeping parents of a match for context.
+function setupTocSearch() {
+  const input = document.getElementById('toc-search');
+  const empty = document.getElementById('toc-empty');
+  const items = [...document.querySelectorAll('#toc-list li')];
+
+  const filter = () => {
+    const query = input.value.trim().toLowerCase();
+    const shown = new Set();
+
+    items.forEach((item) => {
+      const hint = item.querySelector('.toc-hint');
+      hint.textContent = '';
+      hint.classList.add('hidden');
+
+      if (!query) {
+        shown.add(item.dataset.key);
+        return;
+      }
+
+      const nameMatch = item.dataset.name.includes(query);
+      const properties = item.dataset.properties
+        .split(' ')
+        .filter((property) => property.toLowerCase().includes(query));
+
+      if (nameMatch || properties.length) {
+        shown.add(item.dataset.key);
+        item.dataset.parents
+          .split(' ')
+          .filter(Boolean)
+          .forEach((parent) => shown.add(parent));
+      }
+
+      if (!nameMatch && properties.length) {
+        hint.textContent = properties.join(', ');
+        hint.classList.remove('hidden');
+      }
+    });
+
+    items.forEach((item) =>
+      item.classList.toggle('hidden', !shown.has(item.dataset.key)),
+    );
+    empty.classList.toggle('hidden', shown.size > 0);
+  };
+
+  input.addEventListener('input', filter);
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      input.value = '';
+      filter();
+    }
+  });
+}
+
+// Highlight the map being read, the first one not yet half scrolled past or still covering the top half of the viewport.
+function setupScrollSpy() {
+  const sections = [...document.querySelectorAll('main section')];
+  const links = new Map(
+    sections.map((section) => [
+      section,
+      document.querySelector(`#toc-list a[href="#${section.id}"]`),
+    ]),
+  );
+  const activeClasses = ['bg-hover', 'text-heading', 'font-semibold'];
+  let active;
+
+  const update = () => {
+    const atBottom =
+      window.innerHeight + window.scrollY >=
+      document.documentElement.scrollHeight - 2;
+    const headerLine = 96;
+    const center = window.innerHeight / 2;
+    let current = sections.find((section) => {
+      const rect = section.getBoundingClientRect();
+      return rect.top + rect.height / 2 > headerLine || rect.bottom > center;
+    });
+    if (atBottom || !current) {
+      current = sections[sections.length - 1];
+    }
+    if (current === active) {
+      return;
+    }
+
+    links.get(active)?.classList.remove(...activeClasses);
+    links.get(active)?.removeAttribute('aria-current');
+    active = current;
+    const link = links.get(active);
+    if (!link) {
+      return;
+    }
+    link.classList.add(...activeClasses);
+    link.setAttribute('aria-current', 'true');
+
+    if (link.offsetParent && window.matchMedia('(min-width: 1024px)').matches) {
+      const tocRect = toc.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+      if (linkRect.top < tocRect.top + 48 || linkRect.bottom > tocRect.bottom) {
+        toc.scrollTop += linkRect.top - tocRect.top - tocRect.height / 2;
+      }
+    }
+  };
+
+  window.addEventListener('scroll', update, { passive: true });
+  update();
 }
 
 function setupThemeToggle() {
@@ -346,4 +471,6 @@ const keys = collectKeys(rootKey);
 // Render all properties to tables.
 keys.forEach((key, index) => createTable(key, index));
 createToc(keys);
+setupTocSearch();
+setupScrollSpy();
 setupThemeToggle();
