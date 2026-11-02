@@ -12,7 +12,8 @@ module.exports = {
   resolve: {
     fallback: {
       path: require.resolve('path-browserify'),
-      fs: require.resolve('browserify-fs'),
+      // json-schema-ref-parser only reads files in Node.js; its package.json maps fs to false for browsers
+      fs: false,
     },
   },
   optimization: {
