@@ -24,7 +24,7 @@ jobs:
       - uses: carvel-dev/setup-action@v2
         with:
           only: ytt
-          ytt: v0.55.2
+          ytt: v0.55.4
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - run: npm ci
