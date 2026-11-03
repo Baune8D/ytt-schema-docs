@@ -1,5 +1,8 @@
 # ytt schema documentation
 
+[![CI](https://github.com/Baune8D/ytt-schema-docs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Baune8D/ytt-schema-docs/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/Baune8D/ytt-schema-docs)](https://github.com/Baune8D/ytt-schema-docs/blob/main/LICENSE)
+
 Generate a static HTML documentation site for any [ytt](https://carvel.dev/ytt/) data values schema.
 
 **Example site:** https://baunegaard.net/ytt-schema-docs/
