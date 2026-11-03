@@ -117,11 +117,13 @@ Lint and build run on every pull request and on pushes to `main` via GitHub Acti
 
 ## Publishing the example site
 
-The example site is served by GitHub Pages from the `docs` folder. To update it, build the project and copy the output into place:
+On every push to `main`, the CI workflow builds the example site and deploys it to GitHub Pages. To build the same files locally:
 
 ```sh
 npm run pages
 ```
+
+They are copied to the `site` folder.
 
 ## License
 

@@ -170,4 +170,5 @@ Temporary Items
 
 node_modules/
 dist/
+site/
 schema-openapi.yaml
