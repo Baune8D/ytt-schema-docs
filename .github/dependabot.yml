@@ -1,26 +1,38 @@
 version: 2
 updates:
-  - package-ecosystem: 'npm'
-    directory: '/'
+  - package-ecosystem: npm
+    directory: /
     schedule:
-      interval: 'weekly'
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
     ignore:
+      # Major versions are updated manually
       - dependency-name: '*'
-        update-types: ['version-update:semver-major']
+        update-types: [version-update:semver-major]
     groups:
-      dependencies:
+      npm:
         applies-to: version-updates
-        patterns:
-          - '*'
-      security:
+        patterns: ['*']
+      npm-security:
         applies-to: security-updates
-        patterns:
-          - '*'
-  - package-ecosystem: 'github-actions'
-    directory: '/'
+        patterns: ['*']
+
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: 'weekly'
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
     groups:
-      actions:
-        patterns:
-          - '*'
+      github-actions:
+        applies-to: version-updates
+        patterns: ['*']
