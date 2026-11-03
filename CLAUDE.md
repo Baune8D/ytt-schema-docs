@@ -15,7 +15,7 @@ Generates a static HTML documentation site from a [ytt](https://carvel.dev/ytt/)
 ## Building and testing
 
 - Needs Node.js, `ytt` on the `PATH` and a Java runtime (for openapi-generator).
-- CI pins ytt in `.github/workflows/ci.yml` (Dependabot doesn't update it). Keep it at the version you build with locally: ytt versions order the keys of the exported schema differently, which changes the generated `index.html`.
+- CI pins ytt and Java 21 in `.github/workflows/ci.yml` (Dependabot doesn't update the ytt pin). openapi-generator orders the keys of the schema JSON embedded in `index.html` differently on other Java versions (Java 27 puts `enum` before `default`), so a local build on another Java version can differ from the deployed site in key order only.
 - `npm run build` writes the site to `dist/`, `npm start` serves it with webpack-dev-server, and `npm run lint` / `npm run format` run ESLint and Prettier. CI runs lint and the build on every pull request and push.
 - `npm run pages` builds and copies the four files the site serves to `site/`. On a push to `main`, CI deploys `site/` to GitHub Pages, so every change to `main` publishes the example site.
 - After a dependency upgrade, compare the built files with the previous build to confirm the site didn't change.
