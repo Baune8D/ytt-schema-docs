@@ -26,5 +26,5 @@ Generates a static HTML documentation site from a [ytt](https://carvel.dev/ytt/)
 - Major versions are ignored by Dependabot and upgraded by hand: read the release notes, update, and build/lint before committing. If a major breaks the build and fixing it is a design decision, keep the old major and explain why in the commit.
 - New exceptions go in `.github/dependabot.yml` with a comment explaining why.
 - Before holding a package back, find the root cause and check the package's issue tracker.
-- `npm audit` still reports findings from eslint 9 (minimatch 3; eslint 10 moves to minimatch 10, which is still affected) and openapi-generator-cli (it pins `glob` and `proxy-agent`, which bring minimatch 10 and basic-ftp 5). Both need upstream releases.
+- `npm audit` still reports findings from eslint (minimatch 10; only minimatch 11 is fixed) and openapi-generator-cli (it pins `glob` and `proxy-agent`, which bring minimatch 10 and basic-ftp 5). Both need upstream releases.
 - The webpack `fs` fallback is `false`: json-schema-ref-parser only reads files in Node.js, and its `browser` field maps `fs` to `false`.
