@@ -24,6 +24,7 @@ Generates a static HTML documentation site from a [ytt](https://carvel.dev/ytt/)
 
 - Dependabot runs weekly on Monday with a 7-day cooldown. Minor/patch updates are grouped; security updates have their own group.
 - Major versions are ignored by Dependabot and upgraded by hand: read the release notes, update, and build/lint before committing. If a major breaks the build and fixing it is a design decision, keep the old major and explain why in the commit.
+- Dependabot updates the `@openapitools/openapi-generator-cli` wrapper but not the generator version pinned in `openapitools.json`. Upgrade that by hand and compare the generated `index.html` with the previous build.
 - New exceptions go in `.github/dependabot.yml` with a comment explaining why.
 - Before holding a package back, find the root cause and check the package's issue tracker.
 - `npm audit` still reports findings from eslint (minimatch 10; only minimatch 11 is fixed) and openapi-generator-cli (it pins `glob` and `proxy-agent`, which bring minimatch 10 and basic-ftp 5). Both need upstream releases.
