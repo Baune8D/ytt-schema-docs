@@ -1,0 +1,21 @@
+package-lock.json
+  s_1da20591e67452::t_f80315164a0015 36,1593-1595,1599,5276-5278,9799-9801,9805-9808,11236-11244,11246-11247,11253,11260-11266,11269-11278,11290-11292,11296,11425-11427,11433,11436
+package.json
+  s_1da20591e67452::t_7e93a3b842fcb2 40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8e93e1d1d0b8617150101961624ccda5d4c5f8f9",
+  "prompts": {},
+  "sessions": {
+    "s_1da20591e67452": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "56de8afb-cd13-4b9c-b07e-fc995dbca6f0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Morten Larsen <mortenl41@gmail.com>"
+    }
+  }
+}
