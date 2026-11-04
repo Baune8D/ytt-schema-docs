@@ -22,6 +22,16 @@ module.exports = {
   module: {
     rules: [
       {
+        // json-schema-ref-parser imports fs and Node's network modules with import(), by variable
+        // name, and only calls them in Node.js. Keep fs in the bundle and skip the variable imports.
+        test: /[\\/]node_modules[\\/]@apidevtools[\\/]json-schema-ref-parser[\\/]/,
+        parser: {
+          dynamicImportMode: 'eager',
+          exprContextCritical: false,
+          exprContextRegExp: /^$/,
+        },
+      },
+      {
         test: /\.css$/i,
         include: path.resolve(__dirname, 'src'),
         use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'],
@@ -31,7 +41,7 @@ module.exports = {
   plugins: [
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
-      process: 'process/browser',
+      process: 'process/browser.js',
     }),
     new MiniCssExtractPlugin(),
   ],
