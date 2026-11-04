@@ -1,6 +1,7 @@
 {
   "name": "ytt-schema-docs",
   "version": "1.0.0",
+  "private": true,
   "scripts": {
     "build": "npm run generate && NODE_ENV=production webpack",
     "pages": "npm run build && mkdir -p site && cp dist/index.html dist/bundle.js dist/bundle.js.LICENSE.txt dist/main.css site/",
