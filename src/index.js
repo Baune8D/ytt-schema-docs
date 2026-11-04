@@ -384,7 +384,7 @@ function createTable(key, index) {
 
   const section = el(
     'section',
-    'scroll-mt-20 overflow-hidden rounded-xl border border-line bg-card shadow-sm',
+    'scroll-mt-20 overflow-hidden rounded-xl border border-line bg-card shadow-xs',
     header,
     el('div', 'overflow-x-auto', table),
   );
@@ -399,7 +399,7 @@ function createTable(key, index) {
 }
 
 function createToc(keys) {
-  const list = el('ul', 'space-y-0.5 px-2 pb-3 lg:px-0 lg:pb-0');
+  const list = el('ul', 'flex flex-col gap-0.5 px-2 pb-3 lg:px-0 lg:pb-0');
   list.id = 'toc-list';
 
   keys
@@ -440,7 +440,7 @@ function createToc(keys) {
 
   const input = el(
     'input',
-    'w-full rounded-md border border-line bg-card px-3 py-1.5 text-sm text-body placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent',
+    'w-full rounded-md border border-line bg-card px-3 py-1.5 text-sm text-body placeholder:text-muted focus:border-accent focus:outline-hidden focus:ring-1 focus:ring-accent',
   );
   input.id = 'toc-search';
   input.type = 'search';

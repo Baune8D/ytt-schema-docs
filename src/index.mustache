@@ -19,7 +19,7 @@
     </script>
 </head>
 <body class="min-h-screen bg-page text-body antialiased">
-    <header class="sticky top-0 z-20 border-b border-line bg-page/90 backdrop-blur">
+    <header class="sticky top-0 z-20 border-b border-line bg-page/90 backdrop-blur-sm">
         <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
             <div class="min-w-0">
                 <h1 class="truncate text-lg font-bold tracking-tight text-heading sm:text-xl">{{{appName}}}</h1>
@@ -27,7 +27,7 @@
             </div>
             <div class="flex shrink-0 items-center gap-2 sm:gap-3">
                 <span class="inline-flex items-center rounded-full border border-line bg-card px-2.5 py-1 font-mono text-xs font-medium text-heading" title="Version"><span class="mr-1 font-sans font-normal text-muted">Version</span>{{{version}}}</span>
-                <button id="theme-toggle" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-line bg-card text-muted transition hover:text-heading focus:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="Toggle color theme" title="Toggle color theme">
+                <button id="theme-toggle" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-line bg-card text-muted transition hover:text-heading focus:outline-hidden focus-visible:ring-2 focus-visible:ring-accent" aria-label="Toggle color theme" title="Toggle color theme">
                     <svg class="h-4 w-4 dark-only" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
                     <svg class="h-4 w-4 light-only" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 </button>

@@ -83,8 +83,8 @@ Conditional validations, such as `when=` lambdas, cannot be detected and must be
 ### HTML in descriptions
 
 HTML is allowed in `#@schema/desc` and `#@schema/examples`.
-Tailwind only keeps classes it finds in `src`, so a class used only inside the schema must be added to the `safelist` in `tailwind.config.js`.
-`underline` and `text-red-600` are safelisted out of the box, and `text-danger` matches the color of the **Required** badge in both light and dark mode.
+Tailwind only generates the classes it finds in `src`, so a class used only inside the schema must be added to the `@source inline(...)` list in `src/style.css`.
+`underline` and `text-red-600` are listed out of the box, and `text-danger` matches the color of the **Required** badge in both light and dark mode.
 
 ```yaml
 #@schema/desc "<strong><span class=\"text-danger\">Required:</span></strong> when <strong>type</strong> equals <strong>LoadBalancer</strong>."

@@ -1,38 +1,44 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss' source(none);
+
+/* Tailwind only generates the classes it finds in these files. */
+@source './*.{mustache,js}';
+/* Classes used only inside schema.yaml descriptions must be listed here. */
+@source inline('underline text-red-600');
+
+/* Light theme colors. Tailwind creates utilities such as bg-page and text-muted/50 from them. */
+@theme {
+  --color-page: rgb(248 250 252);
+  --color-card: rgb(255 255 255);
+  --color-line: rgb(226 232 240);
+  --color-hover: rgb(241 245 249);
+  --color-chip: rgb(241 245 249);
+  --color-heading: rgb(15 23 42);
+  --color-body: rgb(51 65 85);
+  --color-muted: rgb(100 116 139);
+  --color-accent: rgb(37 99 235);
+  --color-danger: rgb(220 38 38);
+}
 
 @layer base {
-  /* Light theme tokens, as space separated RGB so Tailwind can apply opacity. */
   :root {
-    --color-page: 248 250 252;
-    --color-card: 255 255 255;
-    --color-line: 226 232 240;
-    --color-hover: 241 245 249;
-    --color-chip: 241 245 249;
-    --color-heading: 15 23 42;
-    --color-body: 51 65 85;
-    --color-muted: 100 116 139;
-    --color-accent: 37 99 235;
-    --color-danger: 220 38 38;
     --display-sun: none;
     --display-moon: block;
     color-scheme: light;
   }
 
-  /* Dark theme tokens, applied by system preference or by the toggle. */
+  /* Dark theme colors, applied by system preference or by the toggle. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) {
-      --color-page: 15 23 42;
-      --color-card: 30 41 59;
-      --color-line: 51 65 85;
-      --color-hover: 51 65 85;
-      --color-chip: 15 23 42;
-      --color-heading: 248 250 252;
-      --color-body: 203 213 225;
-      --color-muted: 148 163 184;
-      --color-accent: 96 165 250;
-      --color-danger: 248 113 113;
+      --color-page: rgb(15 23 42);
+      --color-card: rgb(30 41 59);
+      --color-line: rgb(51 65 85);
+      --color-hover: rgb(51 65 85);
+      --color-chip: rgb(15 23 42);
+      --color-heading: rgb(248 250 252);
+      --color-body: rgb(203 213 225);
+      --color-muted: rgb(148 163 184);
+      --color-accent: rgb(96 165 250);
+      --color-danger: rgb(248 113 113);
       --display-sun: block;
       --display-moon: none;
       color-scheme: dark;
@@ -40,16 +46,16 @@
   }
 
   :root[data-theme='dark'] {
-    --color-page: 15 23 42;
-    --color-card: 30 41 59;
-    --color-line: 51 65 85;
-    --color-hover: 51 65 85;
-    --color-chip: 15 23 42;
-    --color-heading: 248 250 252;
-    --color-body: 203 213 225;
-    --color-muted: 148 163 184;
-    --color-accent: 96 165 250;
-    --color-danger: 248 113 113;
+    --color-page: rgb(15 23 42);
+    --color-card: rgb(30 41 59);
+    --color-line: rgb(51 65 85);
+    --color-hover: rgb(51 65 85);
+    --color-chip: rgb(15 23 42);
+    --color-heading: rgb(248 250 252);
+    --color-body: rgb(203 213 225);
+    --color-muted: rgb(148 163 184);
+    --color-accent: rgb(96 165 250);
+    --color-danger: rgb(248 113 113);
     --display-sun: block;
     --display-moon: none;
     color-scheme: dark;
@@ -57,6 +63,12 @@
 
   html {
     scroll-behavior: smooth;
+  }
+
+  /* Tailwind 4's preflight no longer gives buttons a pointer cursor. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
   }
 
   /* Theme toggle icons, the sun shows in dark mode and the moon in light mode. */
