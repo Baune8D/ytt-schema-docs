@@ -18,7 +18,7 @@ Styling is done with [Tailwind CSS](https://tailwindcss.com/) since I hate writi
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) and npm
+- [Node.js](https://nodejs.org/) 22.19 or later, and npm
 - [ytt](https://carvel.dev/ytt/docs/latest/install/) available on your `PATH`
 - A Java runtime, required by openapi-generator (the generator version is pinned in `openapitools.json`)
 
